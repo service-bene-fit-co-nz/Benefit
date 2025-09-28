@@ -1,0 +1,9 @@
+{
+  "name": "Benefit backend",
+  "version": "1.0.0",
+  "description": "Benefit back end",
+  "scripts": {
+  },
+  "author": "Brent Edwards",
+  "license": "ISC"
+}
