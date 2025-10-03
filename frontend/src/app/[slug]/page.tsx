@@ -25,7 +25,7 @@ const DynamicPage = () => {
           const apiUrl =
             process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
           const response = await fetch(
-            `${apiUrl}/api/pages?filters[slug][$eq]=${slug}`,
+            `${apiUrl}/api/pages?filters[slug][$eq]=${slug}`
           );
 
           if (!response.ok) {
@@ -45,9 +45,9 @@ const DynamicPage = () => {
           }
 
           setPage(data.data[0]);
-        } catch (err) {
+        } catch (err: any) {
           // Set the error in state to be thrown on next render
-          setError(err);
+          setError(err.message || String(err));
         } finally {
           setLoading(false);
         }
