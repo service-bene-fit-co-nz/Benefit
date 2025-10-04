@@ -1,30 +1,31 @@
+import { getStrapiMedia } from "@/lib/strapi-utils";
+
 interface HeroProps {
   title: string;
   description: string;
-  image: string;
+  image: any; // Or a more specific type for your image object
 }
 
 const Hero: React.FC<HeroProps> = ({ title, description, image }) => {
+  const imageUrl = getStrapiMedia(image);
+
   return (
-    <div className="relative bg-white py-16 sm:py-24 lg:py-32">
-      <div className="mx-auto max-w-md px-4 text-center sm:max-w-3xl sm:px-6 lg:max-w-7xl lg:px-8">
-        <div className="relative">
-          <div className="relative">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              {title}
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-xl text-gray-500">
-              {description}
-            </p>
-          </div>
-          <div className="relative mt-12">
-            <img
-              className="mx-auto h-auto w-full rounded-lg shadow-xl ring-1 ring-gray-400/10 sm:w-3/4 lg:w-full"
-              src={image}
-              alt=""
-            />
-          </div>
-        </div>
+    <div className="relative h-screen"> {/* Set a height for the hero section */}
+      {imageUrl && (
+        <img
+          className="absolute inset-0 h-full w-full object-cover"
+          src={imageUrl}
+          alt={image.alternativeText || ""}
+        />
+      )}
+      <div className="absolute inset-0 bg-black opacity-50"></div> {/* Overlay */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
+        <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+          {title}
+        </h2>
+        <p className="mt-6 max-w-2xl text-xl text-gray-200">
+          {description}
+        </p>
       </div>
     </div>
   );

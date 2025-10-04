@@ -3,6 +3,7 @@ import { useParams, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import StrapiComponent from "@/components/strapi/strapicomponent";
+import qs from "qs";
 
 type PageData = {
   id: number;
@@ -14,8 +15,22 @@ type PageData = {
 const fetchPage = async (slug: string | string[]) => {
   const apiUrl =
     process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
+
+  const query = qs.stringify(
+    {
+      populate: {
+        pageContent: {
+          populate: "*",
+        },
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+
   const response = await fetch(
-    `${apiUrl}/api/pages?filters[slug][$eq]=${slug}&populate=*`
+    `${apiUrl}/api/pages?filters[slug][$eq]=${slug}&${query}`
   );
   if (!response.ok) {
     if (response.status === 404) {
@@ -33,6 +48,7 @@ const fetchPage = async (slug: string | string[]) => {
 const DynamicPage = () => {
   const params = useParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+  const showJson = false;
 
   const {
     data: page,
@@ -66,9 +82,21 @@ const DynamicPage = () => {
   }
 
   return (
-    <div>
+    <div className="py-8">
       {page.pageContent.map((component, index) => (
-        <StrapiComponent key={index} component={component} />
+        <div key={index} className="border-b-2 border-gray-200 py-4">
+          <StrapiComponent component={component} />
+          {showJson && (
+            <div className="container mx-auto px-4">
+              <div className="mt-4 py-4 px-8 rounded-lg">
+                <h3 className="font-bold text-lg mb-2">Component JSON:</h3>
+                <pre className="text-sm overflow-x-auto">
+                  {JSON.stringify(component, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
       ))}
     </div>
   );
