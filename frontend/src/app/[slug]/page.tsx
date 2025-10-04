@@ -4,11 +4,9 @@ import { useParams, notFound } from "next/navigation";
 
 type PageData = {
   id: number;
-  attributes: {
-    title: string;
-    content: string;
-    slug: string;
-  };
+  title: string;
+  slug: string;
+  content: string;
 };
 
 const DynamicPage = () => {
@@ -63,13 +61,14 @@ const DynamicPage = () => {
   }
 
   if (!page) {
-    return <div>Page not found.</div>;
+    return <div>Page not found {slug}.</div>;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">{page.attributes.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: page.attributes.content }} />
+      <h1 className="text-4xl font-bold mb-4">Title {page.title}</h1>
+      <h2 className="text-3xl mb-4">Slug {page.slug}</h2>
+      <div dangerouslySetInnerHTML={{ __html: page.content }} />
     </div>
   );
 };
