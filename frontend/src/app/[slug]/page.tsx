@@ -1,74 +1,75 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import StrapiComponent from "@/components/strapi/strapicomponent";
 
 type PageData = {
   id: number;
   title: string;
   slug: string;
-  content: string;
+  pageContent: any[]; // Or a more specific type for your components
+};
+
+const fetchPage = async (slug: string | string[]) => {
+  const apiUrl =
+    process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
+  const response = await fetch(
+    `${apiUrl}/api/pages?filters[slug][$eq]=${slug}&populate=*`
+  );
+  if (!response.ok) {
+    if (response.status === 404) {
+      notFound();
+    }
+    throw new Error("Failed to fetch page data.");
+  }
+  const data = await response.json();
+  if (data.data.length === 0) {
+    notFound();
+  }
+  return data.data[0];
 };
 
 const DynamicPage = () => {
   const params = useParams();
-  const slug = params.slug;
-  const [page, setPage] = useState<PageData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
 
-  useEffect(() => {
-    if (slug) {
-      const fetchPage = async () => {
-        try {
-          const apiUrl =
-            process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
-          const response = await fetch(
-            `${apiUrl}/api/pages?filters[slug][$eq]=${slug}`
-          );
+  const {
+    data: page,
+    isLoading,
+    error,
+  } = useQuery<PageData>({
+    queryKey: ["page", slug],
+    queryFn: () => fetchPage(slug || ""),
+    enabled: !!slug,
+  });
 
-          if (!response.ok) {
-            // For 404, trigger the notFound page
-            if (response.status === 404) {
-              notFound();
-            }
-            // For other errors, throw to be caught by the catch block
-            throw new Error("Failed to fetch page data.");
-          }
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-12 w-1/2 mb-4" />
+        <Skeleton className="h-8 w-1/4 mb-4" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
 
-          const data = await response.json();
-
-          if (data.data.length === 0) {
-            // If response is OK but no data, also trigger notFound
-            notFound();
-          }
-
-          setPage(data.data[0]);
-        } catch (err: any) {
-          // Set the error in state to be thrown on next render
-          setError(err.message || String(err));
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchPage();
-    }
-  }, [slug]);
-
-  // If an error was caught, throw it so the error boundary can catch it
   if (error) {
+    // This will be caught by the nearest error boundary
     throw error;
   }
 
   if (!page) {
-    return <div>Page not found {slug}.</div>;
+    // This case should ideally be handled by the notFound() in fetchPage,
+    // but as a fallback, we can show a message.
+    return <div>Page not found for {slug}.</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-4">Title {page.title}</h1>
-      <h2 className="text-3xl mb-4">Slug {page.slug}</h2>
-      <div dangerouslySetInnerHTML={{ __html: page.content }} />
+    <div>
+      {page.pageContent.map((component, index) => (
+        <StrapiComponent key={index} component={component} />
+      ))}
     </div>
   );
 };
