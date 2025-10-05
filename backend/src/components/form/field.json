@@ -1,0 +1,39 @@
+{
+  "collectionName": "components_form_fields",
+  "info": {
+    "displayName": "Field"
+  },
+  "options": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "Text",
+        "TextArea",
+        "CheckBox",
+        "ComboBox",
+        "DatePicker",
+        "Email",
+        "Password",
+        "Adhoc"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "placeHolder": {
+      "type": "string"
+    },
+    "required": {
+      "type": "boolean",
+      "default": false
+    },
+    "options": {
+      "type": "json"
+    }
+  },
+  "config": {}
+}

@@ -1,5 +1,31 @@
 import type { Schema, Struct } from '@strapi/strapi';
 
+export interface FormField extends Struct.ComponentSchema {
+  collectionName: 'components_form_fields';
+  info: {
+    displayName: 'Field';
+  };
+  attributes: {
+    label: Schema.Attribute.String;
+    name: Schema.Attribute.String;
+    options: Schema.Attribute.JSON;
+    placeHolder: Schema.Attribute.String;
+    required: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    type: Schema.Attribute.Enumeration<
+      [
+        'Text',
+        'TextArea',
+        'CheckBox',
+        'ComboBox',
+        'DatePicker',
+        'Email',
+        'Password',
+        'Adhoc',
+      ]
+    >;
+  };
+}
+
 export interface LayoutBanner extends Struct.ComponentSchema {
   collectionName: 'components_layout_banners';
   info: {
@@ -34,6 +60,22 @@ export interface LayoutHeader extends Struct.ComponentSchema {
     cta: Schema.Attribute.Component<'shared.link', false>;
     logo: Schema.Attribute.Component<'shared.logo-link', false>;
     navItems: Schema.Attribute.Component<'shared.link', true>;
+  };
+}
+
+export interface SectionsForm extends Struct.ComponentSchema {
+  collectionName: 'components_sections_forms';
+  info: {
+    displayName: 'Form';
+  };
+  attributes: {
+    field: Schema.Attribute.Component<'form.field', true>;
+    redirectTo: Schema.Attribute.String & Schema.Attribute.Required;
+    submissionType: Schema.Attribute.Enumeration<
+      ['SubmitOnce ', 'AllowUpdate', 'AllowMultiple']
+    > &
+      Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -141,9 +183,11 @@ export interface SharedSlider extends Struct.ComponentSchema {
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
+      'form.field': FormField;
       'layout.banner': LayoutBanner;
       'layout.footer': LayoutFooter;
       'layout.header': LayoutHeader;
+      'sections.form': SectionsForm;
       'sections.hero': SectionsHero;
       'shared.link': SharedLink;
       'shared.logo-link': SharedLogoLink;

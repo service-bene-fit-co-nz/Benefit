@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_sections_forms",
+  "info": {
+    "displayName": "Form"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "submissionType": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "SubmitOnce ",
+        "AllowUpdate",
+        "AllowMultiple"
+      ]
+    },
+    "redirectTo": {
+      "type": "string",
+      "required": true
+    },
+    "field": {
+      "type": "component",
+      "component": "form.field",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

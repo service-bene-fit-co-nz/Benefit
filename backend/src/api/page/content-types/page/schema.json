@@ -20,7 +20,9 @@
     "pageContent": {
       "type": "dynamiczone",
       "components": [
-        "sections.hero"
+        "sections.hero",
+        "sections.form",
+        "shared.rich-text"
       ]
     }
   }

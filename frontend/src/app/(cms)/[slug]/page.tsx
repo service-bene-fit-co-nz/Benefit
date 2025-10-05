@@ -1,7 +1,7 @@
 "use client";
 import { useParams, notFound } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import StrapiComponent from "@/components/strapi/strapicomponent";
 import qs from "qs";
 
@@ -45,10 +45,32 @@ const fetchPage = async (slug: string | string[]) => {
   return data.data[0];
 };
 
+import { useState, useEffect } from "react";
+
 const DynamicPage = () => {
   const params = useParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
-  const showJson = false;
+  const [_debug, setDebug] = useState(process.env.NODE_ENV !== "production");
+
+  useEffect(() => {
+    // Only enable the debug toggle in non-production environments
+    if (process.env.NODE_ENV !== "production") {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        // Toggle debug mode with the F9 key
+        if (event.key === "F9") {
+          event.preventDefault();
+          setDebug((prevDebug) => !prevDebug);
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+
+      // Cleanup the event listener on component unmount
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, []); // Empty dependency array ensures this effect runs only once
 
   const {
     data: page,
@@ -62,10 +84,8 @@ const DynamicPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Skeleton className="h-12 w-1/2 mb-4" />
-        <Skeleton className="h-8 w-1/4 mb-4" />
-        <Skeleton className="h-64 w-full" />
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center h-64">
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -82,14 +102,15 @@ const DynamicPage = () => {
   }
 
   return (
-    <div className="py-8">
+    <div>
       {page.pageContent.map((component, index) => (
-        <div key={index} className="border-b-2 border-gray-200 py-4">
-          <StrapiComponent component={component} />
-          {showJson && (
+        <div key={index}>
+          <StrapiComponent component={component} showBorder={_debug} />
+          {_debug && (
             <div className="container mx-auto px-4">
               <div className="mt-4 py-4 px-8 rounded-lg">
                 <h3 className="font-bold text-lg mb-2">Component JSON:</h3>
+                <p>WTF</p>
                 <pre className="text-sm overflow-x-auto">
                   {JSON.stringify(component, null, 2)}
                 </pre>

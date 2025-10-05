@@ -73,6 +73,7 @@ model Client {
   programmeEnrolments ProgrammeEnrolment[]
   programmeHabits    ClientHabit[]
   transactions        ClientTransaction[]
+  formSubmissions     FormSubmission[]
 }
 
 model Programme {
@@ -236,4 +237,16 @@ model SystemSetting {
   description String?
   createdAt   DateTime          @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime          @default(now()) @db.Timestamptz(6)
+}
+
+model FormSubmission {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  formId    String // To identify the type of form submitted, e.g., from Strapi
+  formData  Json   // The actual submitted data
+
+  clientId  String?  // Optional link to the Client model
+  client    Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }
