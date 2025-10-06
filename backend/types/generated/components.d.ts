@@ -6,8 +6,8 @@ export interface FormField extends Struct.ComponentSchema {
     displayName: 'Field';
   };
   attributes: {
-    label: Schema.Attribute.String;
-    name: Schema.Attribute.String;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
     options: Schema.Attribute.JSON;
     placeHolder: Schema.Attribute.String;
     required: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -22,7 +22,8 @@ export interface FormField extends Struct.ComponentSchema {
         'Password',
         'Adhoc',
       ]
-    >;
+    > &
+      Schema.Attribute.Required;
   };
 }
 

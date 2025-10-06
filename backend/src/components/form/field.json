@@ -7,6 +7,7 @@
   "attributes": {
     "type": {
       "type": "enumeration",
+      "required": true,
       "enum": [
         "Text",
         "TextArea",
@@ -19,10 +20,12 @@
       ]
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "placeHolder": {
       "type": "string"
