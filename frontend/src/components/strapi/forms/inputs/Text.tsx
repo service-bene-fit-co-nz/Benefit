@@ -2,7 +2,7 @@
 interface TextInputProps {
     label: string;
     name: string;
-    placeholder?: string;
+    placeHolder?: string;
     required: boolean;
   }
   

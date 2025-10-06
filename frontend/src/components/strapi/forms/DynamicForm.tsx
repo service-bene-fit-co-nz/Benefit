@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import FormField from "./FormField";
 import { submitForm, updateForm } from "@/server-actions/strapi/actions";
-import { SubmissionType } from "@/server-actions/strapi/types";
+import { FormSubmissionPayload, FormFieldData, SubmissionType } from "@/server-actions/strapi/types";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {

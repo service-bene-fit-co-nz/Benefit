@@ -3,6 +3,7 @@ import { Loader } from "lucide-react";
 
 export interface SpinnerProps {
   size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 const sizeClasses = {
@@ -11,8 +12,8 @@ const sizeClasses = {
   lg: "h-12 w-12",
 };
 
-export const Spinner = ({ size = "md" }: SpinnerProps) => {
+export const Spinner = ({ size = "md", className }: SpinnerProps) => {
   return (
-    <Loader className={cn("animate-spin text-muted-foreground", sizeClasses[size])} />
+    <Loader className={cn("animate-spin text-muted-foreground", sizeClasses[size], className)} />
   );
 };
