@@ -85,17 +85,26 @@ const DynamicForm = ({
         currentGroup = [];
         currentGroupName = fieldDef.name; // Use adhoc field's name as group name
         currentGroupLabel = fieldDef.options?.Value || fieldDef.name; // Use adhoc field's Value as group label
-      } else if (value !== null) {
-        // Regular field with a value
-        const fieldData: FormFieldData = {
-          name: fieldDef.name,
-          label: fieldDef.label || fieldDef.name,
-          value: value,
-        };
-        if (currentGroup) {
-          currentGroup.push(fieldData);
-        } else {
-          payload.push(fieldData);
+      } else {
+        let processedValue: FormDataEntryValue | string | null = value;
+
+        if (fieldDef.type === "CheckBox") {
+          processedValue = value === "on" ? "Yes" : "No";
+        }
+
+        // Only push if processedValue is not null (for non-checkbox fields that might be null)
+        // Or if it's a checkbox, we always push "Yes" or "No"
+        if (processedValue !== null) {
+          const fieldData: FormFieldData = {
+            name: fieldDef.name,
+            label: fieldDef.label || fieldDef.name,
+            value: processedValue,
+          };
+          if (currentGroup) {
+            currentGroup.push(fieldData);
+          } else {
+            payload.push(fieldData);
+          }
         }
       }
     }
@@ -169,17 +178,26 @@ const DynamicForm = ({
         currentGroup = [];
         currentGroupName = fieldDef.name; // Use adhoc field's name as group name
         currentGroupLabel = fieldDef.options?.Value || fieldDef.name; // Use adhoc field's Value as group label
-      } else if (value !== null) {
-        // Regular field with a value
-        const fieldData: FormFieldData = {
-          name: fieldDef.name,
-          label: fieldDef.label || fieldDef.name,
-          value: value,
-        };
-        if (currentGroup) {
-          currentGroup.push(fieldData);
-        } else {
-          payload.push(fieldData);
+      } else {
+        let processedValue: FormDataEntryValue | string | null = value;
+
+        if (fieldDef.type === "CheckBox") {
+          processedValue = value === "on" ? "Yes" : "No";
+        }
+
+        // Only push if processedValue is not null (for non-checkbox fields that might be null)
+        // Or if it's a checkbox, we always push "Yes" or "No"
+        if (processedValue !== null) {
+          const fieldData: FormFieldData = {
+            name: fieldDef.name,
+            label: fieldDef.label || fieldDef.name,
+            value: processedValue,
+          };
+          if (currentGroup) {
+            currentGroup.push(fieldData);
+          } else {
+            payload.push(fieldData);
+          }
         }
       }
     }
