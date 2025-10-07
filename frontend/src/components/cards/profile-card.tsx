@@ -73,11 +73,14 @@ export function ProfileCard({ auth_id }: ProfileCardProps) {
 
   if (loading) {
     return (
-      <Loading
-        title="Loading Profile"
-        description="Please wait..."
-        size="sm"
-      />
+      <Card className="w-full h-full">
+        <CardHeader>
+          <CardTitle>Loading Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Loading description="Loading profile..." size="sm" />
+        </CardContent>
+      </Card>
     );
   }
 
@@ -136,7 +139,7 @@ export function ProfileCard({ auth_id }: ProfileCardProps) {
   const shouldUseFallback = !isValidAvatarUrl || isAvatarRateLimited;
 
   return (
-    <Card className="w-full bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="w-full h-full bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="flex flex-col items-center">
         <Avatar className="h-24 w-24 mb-4 border-2 border-gray-300">
           <AvatarImage

@@ -6,8 +6,8 @@ import { ActionResult } from "@/types/server-action-results";
 import prisma from "@/utils/prisma/client";
 import { ConnectedOAuthAccount, Email, From } from "./types";
 import { google } from "googleapis";
-import { agentQuery } from "@/utils/ai/agent/agent";
 import { getAuthenticatedGmailClient } from "@/lib/gmail-utils";
+import { agentQuery } from "@/utils/ai/agent/agent";
 import {
   AITool,
   AIContent,

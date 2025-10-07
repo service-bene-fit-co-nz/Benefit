@@ -161,20 +161,28 @@ export async function deleteClientSetting(settingId: string) {
   let currentSettingsArray: ClientSetting[] = [];
   if (Array.isArray(client.settings)) {
     for (const item of client.settings) {
-      if (
-        typeof item === 'object' && item !== null &&
-        'id' in item && typeof (item as any).id === 'string' &&
-        'type' in item && typeof (item as any).type !== 'string' &&
-        'properties' in item && Array.isArray((item as any).properties)
-      ) {
-        currentSettingsArray.push({
-          id: (item as any).id,
-          type: (item as any).type,
-          properties: (item as any).properties,
-        });
-      } else {
-        console.warn("Skipping invalid existing setting in deleteClientSetting:", item);
+      if (typeof item !== 'object' || item === null) {
+        console.warn("Skipping invalid existing setting: item is not an object or is null", item);
+        continue;
       }
+      if (!('id' in item) || typeof (item as any).id !== 'string') {
+        console.warn("Skipping invalid existing setting: missing or invalid 'id'", item);
+        continue;
+      }
+      if (!('type' in item) || typeof (item as any).type !== 'string') {
+        console.warn("Skipping invalid existing setting: missing or invalid 'type'", item);
+        continue;
+      }
+      if (!('properties' in item) || !Array.isArray((item as any).properties)) {
+        console.warn("Skipping invalid existing setting: missing or invalid 'properties' array", item);
+        continue;
+      }
+      // If all checks pass, then push
+      currentSettingsArray.push({
+        id: (item as any).id,
+        type: (item as any).type,
+        properties: (item as any).properties,
+      });
     }
   }
 

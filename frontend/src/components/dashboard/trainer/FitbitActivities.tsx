@@ -28,19 +28,26 @@ interface FitbitActivitiesProps {
   endDate: Date;
 }
 
-const fetchClientActivities = async (context: QueryFunctionContext) => {
+import { ActionResult } from "@/types/server-action-results";
+
+const fetchClientActivities = async (context: QueryFunctionContext): Promise<any[]> => {
   const [_key, clientId, startDate, endDate] = context.queryKey;
 
   if (!clientId || !(startDate instanceof Date) || !(endDate instanceof Date)) {
     return [];
   }
 
-  const activities = await getClientActivities(
+  const result: ActionResult<any[]> = await getClientActivities(
     clientId as string,
     startOfDay(startDate),
     endOfDay(endDate)
   );
-  return activities;
+
+  if (!result.success) {
+    throw new Error(result.message || "Failed to fetch Fitbit activities.");
+  }
+
+  return result.data;
 };
 
 export const FitbitActivities = ({
@@ -63,8 +70,19 @@ export const FitbitActivities = ({
       "Failed to fetch client activities:",
       clientActivitiesError
     );
+    const errorMessage = (clientActivitiesError as Error).message;
+    let toastDescription = "Could not retrieve client Fitbit activities.";
+
+    if (errorMessage.includes("FITBIT_REAUTH_REQUIRED")) {
+      toastDescription = "Fitbit connection requires re-authorization. Please connect Fitbit in admin settings.";
+    } else if (errorMessage.includes("FITBIT_NOT_CONNECTED")) {
+      toastDescription = "Fitbit is not connected for this client.";
+    } else if (errorMessage.includes("MISSING_FITBIT_DETAILS")) {
+      toastDescription = "Missing Fitbit connection details. Please re-connect Fitbit.";
+    }
+
     toast.error("Failed to load activities", {
-      description: "Could not retrieve client Fitbit activities.",
+      description: toastDescription,
     });
   }
 
@@ -149,8 +167,7 @@ export const FitbitActivities = ({
           </ul>
         ) : (
           <p>
-            No Fitbit activities found for this client or Fitbit is not
-            connected.
+            {clientActivitiesError ? (clientActivitiesError as Error).message : "No Fitbit activities found for this client or Fitbit is not connected."}
           </p>
         )}
       </CardContent>
