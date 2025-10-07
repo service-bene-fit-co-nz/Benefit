@@ -194,14 +194,14 @@ model SystemSetting {
 }
 
 model FormSubmission {
-  id             String    @id @default(cuid())
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   formId         String
-  formUniqueName String?
   formData       Json
   clientId       String?
-  client         Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  formUniqueName String?
+  client         Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }
 
 enum TransactionStatus {
