@@ -54,26 +54,24 @@ model VerificationToken {
 }
 
 model Client {
-  id          String     @id
-  firstName   String?
-  lastName    String?
-  birthDate   DateTime?  @db.Date
-  current     Boolean    @default(false)
-  disabled    Boolean    @default(true)
-  avatarUrl   String?
-  contactInfo Json?
-  settings    Json?
-  createdAt   DateTime?  @db.Timestamp(6)
-  updatedAt   DateTime?  @db.Timestamp(6)
-  roles       UserRole[] @default([Client])
-  authId      String     @unique(map: "client_auth_id_unique")
-  gender      Gender?
-
-  // Relationships
-  programmeEnrolments ProgrammeEnrolment[]
-  programmeHabits    ClientHabit[]
+  id                  String               @id
+  firstName           String?
+  lastName            String?
+  birthDate           DateTime?            @db.Date
+  current             Boolean              @default(false)
+  disabled            Boolean              @default(true)
+  avatarUrl           String?
+  contactInfo         Json?
+  settings            Json?
+  createdAt           DateTime?            @db.Timestamp(6)
+  updatedAt           DateTime?            @db.Timestamp(6)
+  roles               UserRole[]           @default([Client])
+  authId              String               @unique(map: "client_auth_id_unique")
+  gender              Gender?
+  programmeHabits     ClientHabit[]
   transactions        ClientTransaction[]
   formSubmissions     FormSubmission[]
+  programmeEnrolments ProgrammeEnrolment[]
 }
 
 model Programme {
@@ -94,16 +92,16 @@ model Programme {
 }
 
 model ProgrammeEnrolment {
-  id                  String              @id @default(cuid())
-  programId           String
-  clientId            String
-  notes               String?
-  adhocData           Json?
-  createdAt           DateTime?           @default(now()) @db.Timestamp(6)
-  updatedAt           DateTime?           @default(now()) @db.Timestamp(6)
-  programme           Programme           @relation(fields: [programId], references: [id], onDelete: Cascade)
-  client              Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  transactions        ClientTransaction[]
+  id           String              @id @default(cuid())
+  programId    String
+  clientId     String
+  notes        String?
+  adhocData    Json?
+  createdAt    DateTime?           @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime?           @default(now()) @db.Timestamp(6)
+  transactions ClientTransaction[]
+  client       Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  programme    Programme           @relation(fields: [programId], references: [id], onDelete: Cascade)
 }
 
 model OAuthServices {
@@ -115,64 +113,95 @@ model OAuthServices {
 }
 
 model Habit {
-  id           String   @id @default(cuid())
-  title        String
-  notes        String?
-  monFrequency Int      @default(0)
-  tueFrequency Int      @default(0)
-  wedFrequency Int      @default(0)
-  thuFrequency Int      @default(0)
-  friFrequency Int      @default(0)
-  satFrequency Int      @default(0)
-  sunFrequency Int      @default(0)
-  current      Boolean  @default(true)
-  createdAt    DateTime @default(now()) @db.Timestamp(6)
-  updatedAt    DateTime @default(now()) @db.Timestamp(6)
-
-  // Relationships
+  id              String           @id @default(cuid())
+  title           String
+  notes           String?
+  monFrequency    Int              @default(0)
+  tueFrequency    Int              @default(0)
+  wedFrequency    Int              @default(0)
+  thuFrequency    Int              @default(0)
+  friFrequency    Int              @default(0)
+  satFrequency    Int              @default(0)
+  sunFrequency    Int              @default(0)
+  current         Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime         @default(now()) @db.Timestamp(6)
   programmeHabits ProgrammeHabit[]
 }
 
 model ProgrammeHabit {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   programmeId  String
   habitId      String
   notes        String?
-  monFrequency Int      @default(0)
-  tueFrequency Int      @default(0)
-  wedFrequency Int      @default(0)
-  thuFrequency Int      @default(0)
-  friFrequency Int      @default(0)
-  satFrequency Int      @default(0)
-  sunFrequency Int      @default(0)
-  current      Boolean  @default(true)
-  createdAt    DateTime @default(now()) @db.Timestamp(6)
-  updatedAt    DateTime @default(now()) @db.Timestamp(6)
-
-  // Relationships
-  programme   Programme      @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-  habit       Habit          @relation(fields: [habitId], references: [id], onDelete: Cascade)
-  clientHabits ClientHabit[] // Track daily completions
+  monFrequency Int           @default(0)
+  tueFrequency Int           @default(0)
+  wedFrequency Int           @default(0)
+  thuFrequency Int           @default(0)
+  friFrequency Int           @default(0)
+  satFrequency Int           @default(0)
+  sunFrequency Int           @default(0)
+  current      Boolean       @default(true)
+  createdAt    DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime      @default(now()) @db.Timestamp(6)
+  clientHabits ClientHabit[]
+  habit        Habit         @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  programme    Programme     @relation(fields: [programmeId], references: [id], onDelete: Cascade)
 
   @@unique([programmeId, habitId])
 }
 
 model ClientHabit {
-  id               String   @id @default(cuid())
+  id               String         @id @default(cuid())
   programmeHabitId String
   clientId         String
-  habitDate        DateTime @db.Date
-  completed        Boolean  @default(false)
-  timesDone        Int      @default(0)
+  habitDate        DateTime       @db.Date
+  completed        Boolean        @default(false)
+  timesDone        Int            @default(0)
   notes            String?
-  createdAt        DateTime @default(now()) @db.Timestamp(6)
-  updatedAt        DateTime @default(now()) @db.Timestamp(6)
+  createdAt        DateTime       @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime       @default(now()) @db.Timestamp(6)
+  client           Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  programmeHabit   ProgrammeHabit @relation(fields: [programmeHabitId], references: [id], onDelete: Cascade)
 
-  // Relationships
-  programmeHabit ProgrammeHabit @relation(fields: [programmeHabitId], references: [id], onDelete: Cascade)
-  client         Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  @@unique([programmeHabitId, clientId, habitDate])
+}
 
-  @@unique([programmeHabitId, clientId, habitDate]) // One completion per habit per client per day
+model ClientTransaction {
+  id                   String              @id @default(cuid())
+  clientId             String
+  programmeEnrolmentId String?
+  transactionDate      DateTime            @default(now())
+  description          String
+  amount               Decimal             @default(0)
+  taxAmount            Decimal             @default(0)
+  total                Decimal             @default(0)
+  taxRate              Decimal             @default(0.125)
+  status               TransactionStatus   @default(Pending)
+  transactionType      TransactionType
+  client               Client              @relation(fields: [clientId], references: [id])
+  programmeEnrolment   ProgrammeEnrolment? @relation(fields: [programmeEnrolmentId], references: [id])
+}
+
+model SystemSetting {
+  id          String            @id @default(cuid())
+  key         String            @unique
+  value       String
+  type        SystemSettingType
+  description String?
+  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime          @default(now()) @db.Timestamptz(6)
+}
+
+model FormSubmission {
+  id             String    @id @default(cuid())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  formId         String
+  formUniqueName String?
+  formData       Json
+  clientId       String?
+  client         Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 enum TransactionStatus {
@@ -201,23 +230,6 @@ enum Gender {
   PreferNotToSay
 }
 
-model ClientTransaction {
-  id                   String   @id @default(cuid())
-  clientId             String
-  programmeEnrolmentId String?
-  transactionDate      DateTime @default(now())
-  description          String
-  amount               Decimal  @default(0)
-  taxAmount            Decimal  @default(0)
-  total                Decimal  @default(0)
-  taxRate              Decimal  @default(0.125)
-
-  status             TransactionStatus   @default(Pending)
-  transactionType    TransactionType
-  client             Client              @relation(fields: [clientId], references: [id])
-  programmeEnrolment ProgrammeEnrolment? @relation(fields: [programmeEnrolmentId], references: [id])
-}
-
 enum SystemSettingType {
   String
   Number
@@ -227,26 +239,4 @@ enum SystemSettingType {
   Enum
   Array
   Object
-}
-
-model SystemSetting {
-  id          String            @id @default(cuid())
-  key         String            @unique
-  value       String
-  type        SystemSettingType
-  description String?
-  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime          @default(now()) @db.Timestamptz(6)
-}
-
-model FormSubmission {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  formId    String // To identify the type of form submitted, e.g., from Strapi
-  formData  Json   // The actual submitted data
-
-  clientId  String?  // Optional link to the Client model
-  client    Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }

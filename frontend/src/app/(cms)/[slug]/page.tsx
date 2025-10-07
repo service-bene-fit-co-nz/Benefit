@@ -29,6 +29,9 @@ const fetchPage = async (slug: string | string[]) => {
     }
   );
 
+  console.log("Fetching page with slug:", slug);
+  console.log(`${apiUrl}/api/pages?filters[slug][$eq]=${slug}&${query}`);
+
   const response = await fetch(
     `${apiUrl}/api/pages?filters[slug][$eq]=${slug}&${query}`
   );
@@ -50,7 +53,7 @@ import { useState, useEffect } from "react";
 const DynamicPage = () => {
   const params = useParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
-  const [_debug, setDebug] = useState(process.env.NODE_ENV !== "production");
+  const [_debug, setDebug] = useState(false);
 
   useEffect(() => {
     // Only enable the debug toggle in non-production environments
@@ -110,7 +113,6 @@ const DynamicPage = () => {
             <div className="container mx-auto px-4">
               <div className="mt-4 py-4 px-8 rounded-lg">
                 <h3 className="font-bold text-lg mb-2">Component JSON:</h3>
-                <p>WTF</p>
                 <pre className="text-sm overflow-x-auto">
                   {JSON.stringify(component, null, 2)}
                 </pre>

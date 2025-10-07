@@ -39,6 +39,7 @@ import {
 import { ClientHabitsSummary } from "@/components/dashboard/trainer/ClientHabitsSummary";
 import { FitbitActivities } from "@/components/dashboard/trainer/FitbitActivities";
 import { ClientEmailsSummary } from "@/components/dashboard/trainer/ClientEmailsSummary";
+import { ClientFormSubmissions } from "@/components/dashboard/trainer/ClientFormSubmissions";
 import { normalizeDate } from "@/utils/date-utils";
 
 const calculateAge = (dateOfBirth: string | undefined) => {
@@ -302,6 +303,7 @@ const TrainerClientsPage = () => {
             startDate={startDate}
             endDate={endDate}
           />
+          <ClientFormSubmissions clientId={selectedClient.id} />
         </>
       )}
     </div>

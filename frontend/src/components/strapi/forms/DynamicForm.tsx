@@ -42,6 +42,7 @@ interface DynamicFormProps {
   redirectTo?: string | null;
   submissionType: SubmissionType;
   field: Field[];
+  formUniqueName?: string;
 }
 
 const DynamicForm = ({
@@ -50,6 +51,7 @@ const DynamicForm = ({
   redirectTo,
   submissionType,
   field,
+  formUniqueName,
 }: DynamicFormProps) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,7 +108,12 @@ const DynamicForm = ({
       });
     }
 
-    const result = await submitForm(formId.toString(), payload, submissionType);
+    const result = await submitForm(
+      formId.toString(),
+      payload,
+      submissionType,
+      formUniqueName
+    );
 
     if (result.success) {
       toast.success(result.message);

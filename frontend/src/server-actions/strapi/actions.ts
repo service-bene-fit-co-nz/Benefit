@@ -43,7 +43,8 @@ async function getClientId(formEmail?: string): Promise<string | null> {
 export async function submitForm(
   formId: string,
   formData: FormSubmissionPayload,
-  submissionType: SubmissionType
+  submissionType: SubmissionType,
+  formUniqueName?: string
 ): Promise<SubmissionResult> {
   try {
     const formEmail = formData.find(field => field.name === 'email')?.value as string | undefined;
@@ -88,7 +89,8 @@ export async function submitForm(
       data: {
         formId: formId,
         formData: formData,
-        clientId: clientId,
+        formUniqueName: formUniqueName,
+        client: clientId ? { connect: { id: clientId } } : undefined,
       },
     });
 
@@ -129,5 +131,51 @@ export async function updateForm(
       success: false,
       error: error.message || "An unexpected error occurred.",
     };
+  }
+}
+
+export async function getFormSubmissions(
+  clientId: string
+): Promise<{ success: boolean; submissions?: any[]; error?: string }> {
+  try {
+    const submissions = await prisma.formSubmission.findMany({
+      where: { clientId: clientId },
+      orderBy: { createdAt: "desc" },
+    });
+    return { success: true, submissions };
+  } catch (error: any) {
+    console.error("Error fetching form submissions:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getFormSubmission(
+  submissionId: string
+): Promise<{ success: boolean; submission?: any; error?: string }> {
+  try {
+    const submission = await prisma.formSubmission.findUnique({
+      where: { id: submissionId },
+    });
+    if (!submission) {
+      return { success: false, error: "Submission not found." };
+    }
+    return { success: true, submission };
+  } catch (error: any) {
+    console.error("Error fetching form submission:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteFormSubmission(
+  submissionId: string
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    await prisma.formSubmission.delete({
+      where: { id: submissionId },
+    });
+    return { success: true, message: "Submission deleted successfully." };
+  } catch (error: any) {
+    console.error("Error deleting form submission:", error);
+    return { success: false, error: error.message };
   }
 }
