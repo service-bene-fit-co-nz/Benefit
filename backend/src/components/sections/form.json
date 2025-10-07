@@ -26,6 +26,11 @@
       "type": "component",
       "component": "form.field",
       "repeatable": true
+    },
+    "formUniqueName": {
+      "type": "string",
+      "required": true,
+      "unique": true
     }
   },
   "config": {}

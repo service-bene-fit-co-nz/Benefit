@@ -71,6 +71,9 @@ export interface SectionsForm extends Struct.ComponentSchema {
   };
   attributes: {
     field: Schema.Attribute.Component<'form.field', true>;
+    formUniqueName: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
     redirectTo: Schema.Attribute.String & Schema.Attribute.Required;
     submissionType: Schema.Attribute.Enumeration<
       ['SubmitOnce ', 'AllowUpdate', 'AllowMultiple']
