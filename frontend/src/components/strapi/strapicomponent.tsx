@@ -37,7 +37,7 @@ const StrapiComponent = ({
   return (
     <div
       className={cn(
-        "px-10 py-10",
+        "px-0 py-0",
         showBorder && "border-2 border-dashed border-gray-300"
       )}
     >

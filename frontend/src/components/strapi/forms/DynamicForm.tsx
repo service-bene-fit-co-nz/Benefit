@@ -226,7 +226,11 @@ const DynamicForm = ({
   };
 
   return (
-    <form id={`dynamic-form-${formId}`} onSubmit={handleSubmit} className="space-y-4">
+    <form
+      id={`dynamic-form-${formId}`}
+      onSubmit={handleSubmit}
+      className="space-y-4 p-5 lg:px-[200px] lg:py-5"
+    >
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
       {field.map((field) => (
         <FormField key={field.id} field={field} />
