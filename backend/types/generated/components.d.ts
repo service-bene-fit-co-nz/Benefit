@@ -92,6 +92,23 @@ export interface SectionsHero extends Struct.ComponentSchema {
     description: Schema.Attribute.Text;
     image: Schema.Attribute.Media<'images' | 'files'>;
     title: Schema.Attribute.String;
+    type: Schema.Attribute.Enumeration<
+      [
+        'Full Image',
+        'Left Image 1/4',
+        'Left Image 1/3',
+        'Left Image 1/2',
+        'Left Image 2/3',
+        'Left Image 3/4',
+        'Right Image 1/4',
+        'Right Image 1/3',
+        'Right Image 1/2',
+        'Right Image 2/3',
+        'Right Image 3/4',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Full Image'>;
   };
 }
 

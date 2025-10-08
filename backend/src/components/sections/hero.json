@@ -18,6 +18,24 @@
         "images",
         "files"
       ]
+    },
+    "type": {
+      "type": "enumeration",
+      "required": true,
+      "default": "Full Image",
+      "enum": [
+        "Full Image",
+        "Left Image 1/4",
+        "Left Image 1/3",
+        "Left Image 1/2",
+        "Left Image 2/3",
+        "Left Image 3/4",
+        "Right Image 1/4",
+        "Right Image 1/3",
+        "Right Image 1/2",
+        "Right Image 2/3",
+        "Right Image 3/4"
+      ]
     }
   },
   "config": {}
