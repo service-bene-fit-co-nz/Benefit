@@ -46,6 +46,10 @@ const menuDefinition: NavData = {
           url: "/dashboard/trainer/clients",
         },
         {
+          title: "Summary",
+          url: "/dashboard/trainer/summary",
+        },
+        {
           title: "Programmes",
           url: "/dashboard/trainer/programmes",
         },

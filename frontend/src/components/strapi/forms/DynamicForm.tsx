@@ -16,6 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface Field {
   id: number;
@@ -57,13 +59,54 @@ const DynamicForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
   const [existingSubmissionId, setExistingSubmissionId] = useState<string | null>(null);
+  const [contactInfo, setContactInfo] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    contactNumber: '',
+  });
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    contactNumber: '',
+  });
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
+  const handleContactInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setContactInfo(prev => ({ ...prev, [name]: value }));
+  };
 
-    const rawFormData = new FormData(event.currentTarget);
+  const validate = () => {
+    const newErrors = {
+        firstName: contactInfo.firstName ? '' : 'First name is required',
+        lastName: contactInfo.lastName ? '' : 'Last name is required',
+        email: contactInfo.email ? '' : 'Email is required',
+        contactNumber: contactInfo.contactNumber ? '' : 'Contact number is required',
+    };
+    setErrors(newErrors);
+    return Object.values(newErrors).every(error => error === '');
+  }
+
+  const buildPayloadFromFormData = (rawFormData: FormData): FormSubmissionPayload => {
     const payload: FormSubmissionPayload = [];
+
+    // Handle contact information
+    const { firstName, lastName, email, contactNumber } = contactInfo;
+
+    if (firstName && lastName && email && contactNumber) {
+      payload.push({
+        name: "contactInformation",
+        label: "Contact Information",
+        value: [
+          { name: "firstName", label: "First Name", value: firstName },
+          { name: "lastName", label: "Last Name", value: lastName },
+          { name: "email", label: "Email", value: email },
+          { name: "contactNumber", label: "Contact Number", value: contactNumber },
+        ],
+      });
+    }
+
     let currentGroup: FormFieldData[] | null = null;
     let currentGroupName: string | null = null;
     let currentGroupLabel: string | null = null;
@@ -73,7 +116,6 @@ const DynamicForm = ({
       const value = rawFormData.get(fieldDef.name);
 
       if (fieldDef.type === "Adhoc" && fieldDef.options?.GroupBy) {
-        // If a group was active, push it before starting a new one
         if (currentGroup && currentGroupName && currentGroupLabel) {
           payload.push({
             name: currentGroupName,
@@ -81,10 +123,9 @@ const DynamicForm = ({
             value: currentGroup,
           });
         }
-        // Start new group
         currentGroup = [];
-        currentGroupName = fieldDef.name; // Use adhoc field's name as group name
-        currentGroupLabel = fieldDef.options?.Value || fieldDef.name; // Use adhoc field's Value as group label
+        currentGroupName = fieldDef.name;
+        currentGroupLabel = fieldDef.options?.Value || fieldDef.name;
       } else {
         let processedValue: FormDataEntryValue | string | null = value;
 
@@ -92,8 +133,6 @@ const DynamicForm = ({
           processedValue = value === "on" ? "Yes" : "No";
         }
 
-        // Only push if processedValue is not null (for non-checkbox fields that might be null)
-        // Or if it's a checkbox, we always push "Yes" or "No"
         if (processedValue !== null) {
           const fieldData: FormFieldData = {
             name: fieldDef.name,
@@ -108,7 +147,6 @@ const DynamicForm = ({
         }
       }
     }
-    // Push any remaining active group after the loop
     if (currentGroup && currentGroupName && currentGroupLabel) {
       payload.push({
         name: currentGroupName,
@@ -116,6 +154,19 @@ const DynamicForm = ({
         value: currentGroup,
       });
     }
+    return payload;
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!validate()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const rawFormData = new FormData(event.currentTarget);
+    const payload = buildPayloadFromFormData(rawFormData);
 
     const result = await submitForm(
       formId.toString(),
@@ -145,70 +196,21 @@ const DynamicForm = ({
   const handleOverwriteConfirm = async () => {
     if (!existingSubmissionId) return;
 
+    if (!validate()) {
+      return;
+    }
+
     setIsSubmitting(true);
     setShowOverwriteConfirm(false);
 
-    // Re-read form data for the overwrite action
-    const formElement = document.getElementById(`dynamic-form-${formId}`); // Assuming form has an ID
+    const formElement = document.getElementById(`dynamic-form-${formId}`);
     if (!formElement || !(formElement instanceof HTMLFormElement)) {
       toast.error("Form element not found for overwrite.");
       setIsSubmitting(false);
       return;
     }
     const rawFormData = new FormData(formElement);
-    const payload: FormSubmissionPayload = [];
-    let currentGroup: FormFieldData[] | null = null;
-    let currentGroupName: string | null = null;
-    let currentGroupLabel: string | null = null;
-
-    for (let i = 0; i < field.length; i++) {
-      const fieldDef = field[i];
-      const value = rawFormData.get(fieldDef.name);
-
-      if (fieldDef.type === "Adhoc" && fieldDef.options?.GroupBy) {
-        // If a group was active, push it before starting a new one
-        if (currentGroup && currentGroupName && currentGroupLabel) {
-          payload.push({
-            name: currentGroupName,
-            label: currentGroupLabel,
-            value: currentGroup,
-          });
-        }
-        // Start new group
-        currentGroup = [];
-        currentGroupName = fieldDef.name; // Use adhoc field's name as group name
-        currentGroupLabel = fieldDef.options?.Value || fieldDef.name; // Use adhoc field's Value as group label
-      } else {
-        let processedValue: FormDataEntryValue | string | null = value;
-
-        if (fieldDef.type === "CheckBox") {
-          processedValue = value === "on" ? "Yes" : "No";
-        }
-
-        // Only push if processedValue is not null (for non-checkbox fields that might be null)
-        // Or if it's a checkbox, we always push "Yes" or "No"
-        if (processedValue !== null) {
-          const fieldData: FormFieldData = {
-            name: fieldDef.name,
-            label: fieldDef.label || fieldDef.name,
-            value: processedValue,
-          };
-          if (currentGroup) {
-            currentGroup.push(fieldData);
-          } else {
-            payload.push(fieldData);
-          }
-        }
-      }
-    }
-    // Push any remaining active group after the loop
-    if (currentGroup && currentGroupName && currentGroupLabel) {
-      payload.push({
-        name: currentGroupName,
-        label: currentGroupLabel,
-        value: currentGroup,
-      });
-    }
+    const payload = buildPayloadFromFormData(rawFormData);
 
     const result = await updateForm(existingSubmissionId, payload);
 
@@ -232,6 +234,40 @@ const DynamicForm = ({
       className="space-y-4 p-5 lg:px-[200px] lg:py-5"
     >
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Label htmlFor="firstName">First Name</Label>
+            {errors.firstName && <span className="text-red-500 text-xs ml-2">{errors.firstName}</span>}
+          </div>
+          <Input id="firstName" name="firstName" placeholder="Enter your first name" value={contactInfo.firstName} onChange={handleContactInfoChange} />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Label htmlFor="lastName">Last Name</Label>
+            {errors.lastName && <span className="text-red-500 text-xs ml-2">{errors.lastName}</span>}
+          </div>
+          <Input id="lastName" name="lastName" placeholder="Enter your last name" value={contactInfo.lastName} onChange={handleContactInfoChange} />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Label htmlFor="email">Email</Label>
+            {errors.email && <span className="text-red-500 text-xs ml-2">{errors.email}</span>}
+          </div>
+          <Input id="email" name="email" type="email" placeholder="Enter your email" value={contactInfo.email} onChange={handleContactInfoChange} />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Label htmlFor="contactNumber">Contact Number</Label>
+            {errors.contactNumber && <span className="text-red-500 text-xs ml-2">{errors.contactNumber}</span>}
+          </div>
+          <Input id="contactNumber" name="contactNumber" placeholder="Enter your contact number" value={contactInfo.contactNumber} onChange={handleContactInfoChange} />
+        </div>
+      </div>
+
       {field.map((field) => (
         <FormField key={field.id} field={field} />
       ))}
