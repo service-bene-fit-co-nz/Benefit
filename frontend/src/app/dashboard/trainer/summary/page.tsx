@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { UserRole } from "@prisma/client";
 import { Loading } from "@/components/ui/loading";
+import { FindClient } from "@/components/dashboard/trainer/summary/FindClient";
 
 const Summary = () => {
   return (
@@ -14,10 +15,8 @@ const Summary = () => {
         <h1 className="text-2xl font-bold text-center mb-4">
           Trainer Dashboard
         </h1>
-        <p className="text-center text-muted-foreground">
-          Welcome to your trainer dashboard. More content will be added here
-          soon.
-        </p>
+
+        <FindClient />
       </div>
     </ProtectedRoute>
   );

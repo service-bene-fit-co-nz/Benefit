@@ -15,15 +15,20 @@ export interface ClientForTrainer {
   gender?: string;
 }
 
-export async function fetchClientsForTrainer(query?: string): Promise<ClientForTrainer[]> {
+export async function fetchClientsForTrainer(
+  query?: string,
+  programmeId?: string
+): Promise<ClientForTrainer[]> {
   const session = await getServerSession(authOptions);
 
   if (
     !session ||
     !session.user ||
     !session.user.roles || // Ensure roles array exists
-    !session.user.roles.some(role =>
-      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(role)
+    !session.user.roles.some((role) =>
+      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
+        role
+      )
     )
   ) {
     throw new Error("Unauthorized");
@@ -31,6 +36,15 @@ export async function fetchClientsForTrainer(query?: string): Promise<ClientForT
 
   try {
     let whereClause: any = {};
+
+    if (programmeId) {
+      const enrolments = await prisma.programmeEnrolment.findMany({
+        where: { programId: programmeId },
+        select: { clientId: true },
+      });
+      const clientIds = enrolments.map((e) => e.clientId);
+      whereClause.id = { in: clientIds };
+    }
 
     if (query) {
       const matchingUsers = await prisma.user.findMany({
@@ -40,7 +54,7 @@ export async function fetchClientsForTrainer(query?: string): Promise<ClientForT
         select: { id: true },
       });
 
-      const matchingUserAuthIds = matchingUsers.map(user => user.id);
+      const matchingUserAuthIds = matchingUsers.map((user) => user.id);
 
       whereClause.OR = [
         { firstName: { contains: query, mode: "insensitive" } },
