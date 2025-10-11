@@ -70,10 +70,14 @@ export interface SectionsForm extends Struct.ComponentSchema {
     displayName: 'Form';
   };
   attributes: {
+    contactNumber: Schema.Attribute.String;
+    email: Schema.Attribute.String & Schema.Attribute.Required;
     field: Schema.Attribute.Component<'form.field', true>;
+    firstName: Schema.Attribute.String;
     formUniqueName: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    lastName: Schema.Attribute.String;
     redirectTo: Schema.Attribute.String & Schema.Attribute.Required;
     submissionType: Schema.Attribute.Enumeration<
       ['SubmitOnce ', 'AllowUpdate', 'AllowMultiple']
