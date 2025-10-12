@@ -8,6 +8,11 @@ import { FindClient } from "@/components/dashboard/trainer/summary/FindClient";
 import { DateRangePicker } from "@/components/shared/DateRange";
 import { startOfWeek, endOfWeek } from "date-fns";
 import { normalizeDate } from "@/utils/date-utils";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 const Summary = () => {
   const [startDate, setStartDate] = useState<Date>(() => {
@@ -31,17 +36,23 @@ const Summary = () => {
     <ProtectedRoute
       requiredRoles={[UserRole.Trainer, UserRole.Admin, UserRole.SystemAdmin]}
     >
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 h-screen flex flex-col">
         <h1 className="text-2xl font-bold text-center mb-4">
           Trainer Dashboard
         </h1>
-
-        <FindClient />
-        <DateRangePicker
-          initialStartDate={startDate}
-          initialEndDate={endDate}
-          onDateRangeChange={handleDateRangeChange}
-        />
+        <ResizablePanelGroup direction="horizontal" className="flex-grow">
+          <ResizablePanel className="overflow-auto">
+            <FindClient />
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel className="overflow-auto">
+            <DateRangePicker
+              initialStartDate={startDate}
+              initialEndDate={endDate}
+              onDateRangeChange={handleDateRangeChange}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </ProtectedRoute>
   );
