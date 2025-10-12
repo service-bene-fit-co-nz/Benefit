@@ -1,27 +1,44 @@
-[SYSTEM MESSAGE/ROLE]
-You are an expert full stack developer developer. 
-You are an exper in NextJS, Prisma, Tailwind CSS
-Your task is to design, plan, and generate all necessary code for a new feature.
+Goal
+Generate a reusable, responsive container component that handles the main content and a right-hand filter panel. This component must be designed to fit adjacently to an existing, fixed-width Left Navigation Sidebar. The solution must prevent Next.js hydration mismatches.
 
+Implementation Details
+Context: The component must assume it is placed inside a container that handles the overall h-screen and a fixed-width external Left Navigation. The component itself will manage its full available height (h-full) and remaining width (flex-1).
 
-[OUTPUT FORMAT]
-Your response MUST be in Markdown with four distinct sections: # PLAN, # USER STORIES, # CODE, and # TESTS.
+Assumed Parent Structure: <div className="flex h-screen"><nav className="w-[200px]">...</nav><div className="flex-1"> **<AdaptiveFilterLayout />** </div></div>
 
-[FEATURE GOAL]
-Create an API endpoint that allows a user to "like" a post.
+Breakpoints and Logic: The mobile/desktop switch must happen at the Tailwind CSS lg breakpoint (1024px).
 
-[FUNCTIONAL REQUIREMENTS]
-- Endpoint: POST /api/v1/posts/{post_id}/like
-- Input: Requires an authenticated user token.
-- Logic: If the user has already liked the post, the action should be an 'unlike' (remove the like). Otherwise, it should add a 'like'.
-- Response: Return a 200 OK with the new like count for the post.
+use-media-query.ts Hook: Create a client component hook to safely check the lg breakpoint. It must return false during the server render phase to prevent hydration errors.
 
-[TECHNICAL CONTEXT]
-- Framework: Django Rest Framework (DRF).
-- Existing Model: We have a `Post` model. You need to create a new `PostLike` model.
-- Authentication: Use the existing `IsAuthenticated` DRF permission class.
-- Style: Use snake_case for all Python variables and class-based views.
+AdaptiveFilterLayout.tsx Component: (The new reusable component)
 
-[NON-FUNCTIONAL REQUIREMENTS]
-- Performance: The database operation must be atomic to prevent race conditions.
-- Tests: Include a unit test for both the 'like' and 'unlike' logic using the Django Test Client.
+It must be a Client Component ('use client').
+
+It accepts three generic props: Header, MainContent, and FilterPanel (ReactNode).
+
+Structure: Use a vertical flex column (flex flex-col h-full) to contain a fixed Header and the dynamic content area (flex-1).
+
+Desktop View (≥1024px): Use ResizablePanelGroup (horizontal direction) to split the space below the header.
+
+Left Panel (Main): MainContent (default size 75, min 50).
+
+Right Panel (Filter): FilterPanel (default size 25, min 15, max 35).
+
+Use a persistent autoSaveId ("adaptive-admin-filter-v1").
+
+Mobile View (<1024px):
+
+Display the MainContent directly below the header.
+
+Use a Sheet component, triggered by a button in the header, to render the FilterPanel. The sheet must be placed on the right side (side="right"). The trigger button should be placed within the Header.
+
+Styling & Scrolling: The content areas within the main content and filter panel must use ScrollArea to manage local vertical scrolling, ensuring the rest of the layout remains fixed.
+
+Prompt Output Request
+Generate the code for the following three parts:
+
+components/hooks/use-media-query.ts
+
+components/layout/AdaptiveFilterLayout.tsx
+
+A brief example of how to use AdaptiveFilterLayout.tsx within a page.tsx.
