@@ -327,15 +327,30 @@ const DynamicForm = ({
       {field.map((field) => (
         <FormField key={field.id} field={field} />
       ))}
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <span className="flex items-center">
-            <Spinner size="sm" className="mr-2" /> Submitting...
-          </span>
-        ) : (
-          "Submit"
-        )}
-      </Button>
+
+      {Object.values(errors).some((error) => error !== "") && (
+        <div className="flex justify-center">
+          <p className="text-red-500 text-sm mt-2">
+            There was an error with your submission. Please check the fields
+            above.
+          </p>
+        </div>
+      )}
+      <div className="flex justify-center">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full md:w-[300px]"
+        >
+          {isSubmitting ? (
+            <span className="flex items-center">
+              <Spinner size="sm" className="mr-2" /> Submitting...
+            </span>
+          ) : (
+            "Submit"
+          )}
+        </Button>
+      </div>
 
       <AlertDialog
         open={showOverwriteConfirm}

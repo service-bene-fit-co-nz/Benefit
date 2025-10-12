@@ -194,14 +194,16 @@ model SystemSetting {
 }
 
 model ClientNote {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id             String         @id @default(cuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   formId         String
   formData       Json
   clientId       String?
   formUniqueName String?
-  client         Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  noteType       ClientNoteType @default(TrainerNote)
+  noteMetadata   Json
+  client         Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }
 
 enum TransactionStatus {
@@ -239,4 +241,14 @@ enum SystemSettingType {
   Enum
   Array
   Object
+}
+
+enum ClientNoteType {
+  AINote
+  TrainerNote
+  ClientEmail
+  ClientForm
+  ClientNote
+  FitnessTrackerEntry
+  HabitEntry
 }

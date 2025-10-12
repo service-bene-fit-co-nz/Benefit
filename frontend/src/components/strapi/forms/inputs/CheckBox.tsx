@@ -1,5 +1,4 @@
-
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 interface CheckBoxProps {
@@ -11,7 +10,7 @@ interface CheckBoxProps {
   const CheckBox = ({ label, name, required }: CheckBoxProps) => {
     return (
       <div className="flex items-center space-x-2">
-        <Checkbox id={name} name={name} required={required} />
+        <Switch id={name} name={name} required={required} />
         <Label
           htmlFor={name}
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -23,4 +22,3 @@ interface CheckBoxProps {
   };
   
   export default CheckBox;
-  

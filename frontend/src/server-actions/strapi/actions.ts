@@ -92,6 +92,13 @@ export async function submitForm(
         formData: formData,
         formUniqueName: formUniqueName,
         client: clientId ? { connect: { id: clientId } } : undefined,
+        noteType: "ClientForm",
+        noteMetadata: {
+          noteType: "Client Form",
+          formId: formId,
+          formData: formData,
+          formUniqueName: formUniqueName,
+        },
       },
     });
 
