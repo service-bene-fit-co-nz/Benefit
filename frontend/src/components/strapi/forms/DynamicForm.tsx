@@ -3,7 +3,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import FormField from "./FormField";
 import { submitForm, updateForm } from "@/server-actions/strapi/actions";
-import { FormSubmissionPayload, FormFieldData, SubmissionType } from "@/server-actions/strapi/types";
+import {
+  ClientNotePayload,
+  FormFieldData,
+  SubmissionType,
+} from "@/server-actions/strapi/types";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -58,38 +62,44 @@ const DynamicForm = ({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
-  const [existingSubmissionId, setExistingSubmissionId] = useState<string | null>(null);
+  const [existingSubmissionId, setExistingSubmissionId] = useState<
+    string | null
+  >(null);
   const [contactInfo, setContactInfo] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    contactNumber: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    contactNumber: "",
   });
   const [errors, setErrors] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    contactNumber: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    contactNumber: "",
   });
 
   const handleContactInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setContactInfo(prev => ({ ...prev, [name]: value }));
+    setContactInfo((prev) => ({ ...prev, [name]: value }));
   };
 
   const validate = () => {
     const newErrors = {
-        firstName: contactInfo.firstName ? '' : 'First name is required',
-        lastName: contactInfo.lastName ? '' : 'Last name is required',
-        email: contactInfo.email ? '' : 'Email is required',
-        contactNumber: contactInfo.contactNumber ? '' : 'Contact number is required',
+      firstName: contactInfo.firstName ? "" : "First name is required",
+      lastName: contactInfo.lastName ? "" : "Last name is required",
+      email: contactInfo.email ? "" : "Email is required",
+      contactNumber: contactInfo.contactNumber
+        ? ""
+        : "Contact number is required",
     };
     setErrors(newErrors);
-    return Object.values(newErrors).every(error => error === '');
-  }
+    return Object.values(newErrors).every((error) => error === "");
+  };
 
-  const buildPayloadFromFormData = (rawFormData: FormData): FormSubmissionPayload => {
-    const payload: FormSubmissionPayload = [];
+  const buildPayloadFromFormData = (
+    rawFormData: FormData
+  ): ClientNotePayload => {
+    const payload: ClientNotePayload = [];
 
     // Handle contact information
     const { firstName, lastName, email, contactNumber } = contactInfo;
@@ -102,7 +112,11 @@ const DynamicForm = ({
           { name: "firstName", label: "First Name", value: firstName },
           { name: "lastName", label: "Last Name", value: lastName },
           { name: "email", label: "Email", value: email },
-          { name: "contactNumber", label: "Contact Number", value: contactNumber },
+          {
+            name: "contactNumber",
+            label: "Contact Number",
+            value: contactNumber,
+          },
         ],
       });
     }
@@ -155,7 +169,7 @@ const DynamicForm = ({
       });
     }
     return payload;
-  }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -183,7 +197,10 @@ const DynamicForm = ({
         }, 1500);
       }
     } else {
-      if (result.code === "EXISTING_FOUND" && submissionType === "AllowUpdate") {
+      if (
+        result.code === "EXISTING_FOUND" &&
+        submissionType === "AllowUpdate"
+      ) {
         setExistingSubmissionId(result.existingSubmissionId || null);
         setShowOverwriteConfirm(true);
       } else {
@@ -234,37 +251,76 @@ const DynamicForm = ({
       className="space-y-4 p-5 lg:px-[200px] lg:py-5"
     >
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="flex items-center">
             <Label htmlFor="firstName">First Name</Label>
-            {errors.firstName && <span className="text-red-500 text-xs ml-2">{errors.firstName}</span>}
+            {errors.firstName && (
+              <span className="text-red-500 text-xs ml-2">
+                {errors.firstName}
+              </span>
+            )}
           </div>
-          <Input id="firstName" name="firstName" placeholder="Enter your first name" value={contactInfo.firstName} onChange={handleContactInfoChange} />
+          <Input
+            id="firstName"
+            name="firstName"
+            placeholder="Enter your first name"
+            value={contactInfo.firstName}
+            onChange={handleContactInfoChange}
+          />
         </div>
         <div className="space-y-2">
           <div className="flex items-center">
             <Label htmlFor="lastName">Last Name</Label>
-            {errors.lastName && <span className="text-red-500 text-xs ml-2">{errors.lastName}</span>}
+            {errors.lastName && (
+              <span className="text-red-500 text-xs ml-2">
+                {errors.lastName}
+              </span>
+            )}
           </div>
-          <Input id="lastName" name="lastName" placeholder="Enter your last name" value={contactInfo.lastName} onChange={handleContactInfoChange} />
+          <Input
+            id="lastName"
+            name="lastName"
+            placeholder="Enter your last name"
+            value={contactInfo.lastName}
+            onChange={handleContactInfoChange}
+          />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="flex items-center">
             <Label htmlFor="email">Email</Label>
-            {errors.email && <span className="text-red-500 text-xs ml-2">{errors.email}</span>}
+            {errors.email && (
+              <span className="text-red-500 text-xs ml-2">{errors.email}</span>
+            )}
           </div>
-          <Input id="email" name="email" type="email" placeholder="Enter your email" value={contactInfo.email} onChange={handleContactInfoChange} />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Enter your email"
+            value={contactInfo.email}
+            onChange={handleContactInfoChange}
+          />
         </div>
         <div className="space-y-2">
           <div className="flex items-center">
             <Label htmlFor="contactNumber">Contact Number</Label>
-            {errors.contactNumber && <span className="text-red-500 text-xs ml-2">{errors.contactNumber}</span>}
+            {errors.contactNumber && (
+              <span className="text-red-500 text-xs ml-2">
+                {errors.contactNumber}
+              </span>
+            )}
           </div>
-          <Input id="contactNumber" name="contactNumber" placeholder="Enter your contact number" value={contactInfo.contactNumber} onChange={handleContactInfoChange} />
+          <Input
+            id="contactNumber"
+            name="contactNumber"
+            placeholder="Enter your contact number"
+            value={contactInfo.contactNumber}
+            onChange={handleContactInfoChange}
+          />
         </div>
       </div>
 
@@ -281,17 +337,26 @@ const DynamicForm = ({
         )}
       </Button>
 
-      <AlertDialog open={showOverwriteConfirm} onOpenChange={setShowOverwriteConfirm}>
+      <AlertDialog
+        open={showOverwriteConfirm}
+        onOpenChange={setShowOverwriteConfirm}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Overwrite Existing Submission?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have already submitted this form. Do you want to overwrite your previous submission?
+              You have already submitted this form. Do you want to overwrite
+              your previous submission?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleOverwriteConfirm} disabled={isSubmitting}>
+            <AlertDialogCancel disabled={isSubmitting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleOverwriteConfirm}
+              disabled={isSubmitting}
+            >
               Overwrite
             </AlertDialogAction>
           </AlertDialogFooter>

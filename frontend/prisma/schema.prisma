@@ -70,7 +70,7 @@ model Client {
   gender              Gender?
   programmeHabits     ClientHabit[]
   transactions        ClientTransaction[]
-  formSubmissions     FormSubmission[]
+  clientNotes         ClientNote[]
   programmeEnrolments ProgrammeEnrolment[]
 }
 
@@ -193,7 +193,7 @@ model SystemSetting {
   updatedAt   DateTime          @default(now()) @db.Timestamptz(6)
 }
 
-model FormSubmission {
+model ClientNote {
   id             String   @id @default(cuid())
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

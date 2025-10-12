@@ -3,7 +3,7 @@
 import prisma from "@/utils/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { FormSubmissionPayload, SubmissionResult, SubmissionType } from "./types";
+import { ClientNotePayload, SubmissionResult, SubmissionType } from "./types";
 
 // Helper to get client ID from session or form email
 async function getClientId(formEmail?: string): Promise<string | null> {
@@ -42,16 +42,17 @@ async function getClientId(formEmail?: string): Promise<string | null> {
 
 export async function submitForm(
   formId: string,
-  formData: FormSubmissionPayload,
+  formData: ClientNotePayload,
   submissionType: SubmissionType,
   formUniqueName?: string
 ): Promise<SubmissionResult> {
   try {
-    const formEmail = formData.find(field => field.name === 'email')?.value as string | undefined;
+    const formEmail = formData.find((field) => field.name === "email")
+      ?.value as string | undefined;
     const clientId = await getClientId(formEmail);
 
     // Check for existing submission
-    const existingSubmission = await prisma.formSubmission.findFirst({
+    const existingSubmission = await prisma.clientNote.findFirst({
       where: {
         formId: formId,
         clientId: clientId, // Can be null, which is fine for findFirst
@@ -85,7 +86,7 @@ export async function submitForm(
     }
 
     // Create new submission
-    const newSubmission = await prisma.formSubmission.create({
+    const newSubmission = await prisma.clientNote.create({
       data: {
         formId: formId,
         formData: formData,
@@ -110,10 +111,10 @@ export async function submitForm(
 
 export async function updateForm(
   submissionId: string,
-  formData: FormSubmissionPayload
+  formData: ClientNotePayload
 ): Promise<SubmissionResult> {
   try {
-    const updatedSubmission = await prisma.formSubmission.update({
+    const updatedSubmission = await prisma.clientNote.update({
       where: { id: submissionId },
       data: {
         formData: formData,
@@ -134,11 +135,11 @@ export async function updateForm(
   }
 }
 
-export async function getFormSubmissions(
+export async function getClientNotes(
   clientId: string
 ): Promise<{ success: boolean; submissions?: any[]; error?: string }> {
   try {
-    const submissions = await prisma.formSubmission.findMany({
+    const submissions = await prisma.clientNote.findMany({
       where: { clientId: clientId },
       orderBy: { createdAt: "desc" },
     });
@@ -149,11 +150,11 @@ export async function getFormSubmissions(
   }
 }
 
-export async function getFormSubmission(
+export async function getClientNote(
   submissionId: string
 ): Promise<{ success: boolean; submission?: any; error?: string }> {
   try {
-    const submission = await prisma.formSubmission.findUnique({
+    const submission = await prisma.clientNote.findUnique({
       where: { id: submissionId },
     });
     if (!submission) {
@@ -166,11 +167,11 @@ export async function getFormSubmission(
   }
 }
 
-export async function deleteFormSubmission(
+export async function deleteClientNote(
   submissionId: string
 ): Promise<{ success: boolean; message?: string; error?: string }> {
   try {
-    await prisma.formSubmission.delete({
+    await prisma.clientNote.delete({
       where: { id: submissionId },
     });
     return { success: true, message: "Submission deleted successfully." };

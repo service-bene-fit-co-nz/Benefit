@@ -1,6 +1,10 @@
 "use client";
 
-import { useQuery, QueryFunctionContext, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  QueryFunctionContext,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState, useCallback } from "react";
 import {
@@ -12,10 +16,30 @@ import {
 } from "@/components/ui/card";
 import { Loading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { deleteFormSubmission, getFormSubmissions } from "@/server-actions/strapi/actions";
-import { FormSubmission } from "@prisma/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  deleteClientNote,
+  getClientNotes,
+} from "@/server-actions/strapi/actions";
+import { ClientNote } from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -25,22 +49,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-interface ClientFormSubmissionsProps {
+interface ClientNotesProps {
   clientId: string;
 }
 
-const fetchClientFormSubmissions = async (context: QueryFunctionContext): Promise<FormSubmission[]> => {
+const fetchClientNotes = async (
+  context: QueryFunctionContext
+): Promise<ClientNote[]> => {
   const [_key, clientId] = context.queryKey as [string, string];
 
   if (!clientId) {
     return [];
   }
 
-  const formSubmissionsResult = await getFormSubmissions(clientId);
+  const formSubmissionsResult = await getClientNotes(clientId);
 
   if (!formSubmissionsResult.success) {
     throw new Error(
-      formSubmissionsResult.error || "Could not retrieve client form submissions."
+      formSubmissionsResult.error ||
+        "Could not retrieve client form submissions."
     );
   }
   return formSubmissionsResult.submissions || [];
@@ -67,16 +94,14 @@ const formatFormDataAsText = (formData: any[] | null | undefined): string => {
   return formattedText.trim(); // Remove trailing newline
 };
 
-export const ClientFormSubmissions = ({
-  clientId,
-}: ClientFormSubmissionsProps) => {
+export const ClientFormSubmissions = ({ clientId }: ClientNotesProps) => {
   const {
     data: clientFormSubmissions = [],
     isLoading: isLoadingFormSubmissions,
     error: clientFormSubmissionsError,
   } = useQuery({
     queryKey: ["clientFormSubmissions", clientId],
-    queryFn: fetchClientFormSubmissions,
+    queryFn: fetchClientNotes,
     enabled: !!clientId,
   });
 
@@ -85,7 +110,9 @@ export const ClientFormSubmissions = ({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewedFormData, setViewedFormData] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [submissionToDeleteId, setSubmissionToDeleteId] = useState<string | null>(null);
+  const [submissionToDeleteId, setSubmissionToDeleteId] = useState<
+    string | null
+  >(null);
 
   const copyToClipboard = useCallback(async (text: string, message: string) => {
     try {
@@ -97,20 +124,25 @@ export const ClientFormSubmissions = ({
     }
   }, []);
 
-  const handleDeleteSubmission = useCallback(async () => {
+  const handleDeleteClientNote = useCallback(async () => {
     if (!submissionToDeleteId) return;
 
     // Call the server action to delete the submission
-    await deleteFormSubmission(submissionToDeleteId);
+    await deleteClientNote(submissionToDeleteId);
 
     toast.success("Form submission deleted successfully.");
     setIsDeleteDialogOpen(false);
     setSubmissionToDeleteId(null);
-    queryClient.invalidateQueries({ queryKey: ["clientFormSubmissions", clientId] });
+    queryClient.invalidateQueries({
+      queryKey: ["clientFormSubmissions", clientId],
+    });
   }, [submissionToDeleteId, queryClient, clientId]);
 
   if (clientFormSubmissionsError) {
-    console.error("Failed to fetch client form submissions:", clientFormSubmissionsError);
+    console.error(
+      "Failed to fetch client form submissions:",
+      clientFormSubmissionsError
+    );
     toast.error("Failed to load form submissions", {
       description: (clientFormSubmissionsError as Error).message,
     });
@@ -120,11 +152,12 @@ export const ClientFormSubmissions = ({
     <Card className="mt-8">
       <CardHeader>
         <CardTitle className="text-2xl">Client Form Submissions</CardTitle>
-        {!isLoadingFormSubmissions && clientFormSubmissions.length === 0 && ( // Only show description if no submissions and not loading
-          <CardDescription>
-            Summary of client's form submissions will be displayed here.
-          </CardDescription>
-        )}
+        {!isLoadingFormSubmissions &&
+          clientFormSubmissions.length === 0 && ( // Only show description if no submissions and not loading
+            <CardDescription>
+              Summary of client's form submissions will be displayed here.
+            </CardDescription>
+          )}
       </CardHeader>
       <CardContent>
         {isLoadingFormSubmissions ? (
@@ -158,7 +191,13 @@ export const ClientFormSubmissions = ({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
-                        <Dialog open={isViewModalOpen && viewedFormData?.id === submission.id} onOpenChange={setIsViewModalOpen}>
+                        <Dialog
+                          open={
+                            isViewModalOpen &&
+                            viewedFormData?.id === submission.id
+                          }
+                          onOpenChange={setIsViewModalOpen}
+                        >
                           <DialogTrigger asChild>
                             <Button
                               variant="outline"
@@ -189,7 +228,9 @@ export const ClientFormSubmissions = ({
                                 size="sm"
                                 onClick={() =>
                                   copyToClipboard(
-                                    formatFormDataAsText(viewedFormData?.formData),
+                                    formatFormDataAsText(
+                                      viewedFormData?.formData
+                                    ),
                                     "Formatted text copied to clipboard!"
                                   )
                                 }
@@ -212,7 +253,13 @@ export const ClientFormSubmissions = ({
                           </DialogContent>
                         </Dialog>
 
-                        <AlertDialog open={isDeleteDialogOpen && submissionToDeleteId === submission.id} onOpenChange={setIsDeleteDialogOpen}>
+                        <AlertDialog
+                          open={
+                            isDeleteDialogOpen &&
+                            submissionToDeleteId === submission.id
+                          }
+                          onOpenChange={setIsDeleteDialogOpen}
+                        >
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="destructive"
@@ -227,15 +274,19 @@ export const ClientFormSubmissions = ({
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the
-                                form submission.
+                                This action cannot be undone. This will
+                                permanently delete the form submission.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleDeleteSubmission}>
+                              <AlertDialogAction
+                                onClick={handleDeleteClientNote}
+                              >
                                 Continue
                               </AlertDialogAction>
                             </AlertDialogFooter>
