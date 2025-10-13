@@ -74,7 +74,7 @@ export const FindClient = ({}: FindClientProps) => {
 
   const programmeOptions = [
     { value: "", label: "All Programmes" },
-    ...((programmes && programmes.success ? programmes.data : [])
+    ...(programmes && programmes.success ? programmes.data : [])
       .slice() // Create a shallow copy to avoid modifying the original array
       .sort((a, b) => {
         const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
@@ -97,14 +97,11 @@ export const FindClient = ({}: FindClientProps) => {
           ? `(${startDate}${endDate ? ` to ${endDate}` : ""})`
           : "";
         return { value: p.id, label: `${p.name} ${dateRange}` };
-      })),
+      }),
   ];
 
   return (
-    <Card className="mt-8">
-      <CardHeader>
-        <CardTitle className="text-2xl">Find Client</CardTitle>
-      </CardHeader>
+    <Card className="">
       <CardContent>
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="relative flex-grow md:w-1/2">
@@ -116,7 +113,7 @@ export const FindClient = ({}: FindClientProps) => {
             />
             {searchTerm && (
               <X
-                className="absolute top-2.5 right-2 h-5 w-5 text-gray-500 cursor-pointer"
+                className="absolute top-2.5 right-2 h-5 w-5 text-muted-foreground cursor-pointer"
                 onClick={() => setSearchTerm("")}
               />
             )}
@@ -134,39 +131,39 @@ export const FindClient = ({}: FindClientProps) => {
         </div>
         <div className="max-h-40 overflow-y-auto">
           <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Email</TableHead>
-              <TableHead className="hidden md:table-cell">Phone</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={3} className="text-center">
-                  Loading...
-                </TableCell>
+                <TableHead>Name</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden md:table-cell">Phone</TableHead>
               </TableRow>
-            ) : (
-              clients?.map((client) => (
-                <TableRow
-                  key={client.id}
-                  onClick={() => setSelectedClient(client.id)}
-                  className={selectedClient === client.id ? "bg-accent" : ""}
-                >
-                  <TableCell>{client.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {client.email}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {client.phone}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">
+                    Loading...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                clients?.map((client) => (
+                  <TableRow
+                    key={client.id}
+                    onClick={() => setSelectedClient(client.id)}
+                    className={selectedClient === client.id ? "bg-accent" : ""}
+                  >
+                    <TableCell>{client.name}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {client.email}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {client.phone}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>

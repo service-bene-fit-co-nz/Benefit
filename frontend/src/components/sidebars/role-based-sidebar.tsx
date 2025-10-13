@@ -1,7 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { GalleryVerticalEnd, PanelLeft } from "lucide-react"; // Added PanelLeft
+import {
+  GalleryVerticalEnd,
+  PanelLeft,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  User,
+  Users,
+  Shield,
+  Settings,
+  FlaskConical,
+} from "lucide-react"; // Added PanelLeft, ChevronDown, ChevronRight
 import { useSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
 
@@ -20,6 +31,15 @@ import {
   SidebarFooter, // Added SidebarFooter
   useSidebar, // Added useSidebar
 } from "@/components/ui/sidebar";
+
+const iconMap: { [key: string]: React.ElementType } = {
+  Home,
+  User,
+  Users,
+  Shield,
+  Settings,
+  FlaskConical,
+};
 
 /**
  * Interface for the individual navigation item (like Installation, Routing, etc.)
@@ -41,6 +61,7 @@ export interface NavMainSection {
   isActive?: boolean;
   roles?: UserRole[]; // Roles that can access this section
   isDisabled?: boolean;
+  icon?: string;
 }
 
 /**
@@ -177,8 +198,9 @@ function filterMenuByEnabled(menuData: NavData): NavData {
     // Filter out disabled items within the section
     const enabledItems = section.items.filter((item) => !item.isDisabled);
 
-    // Only include sections that have at least one enabled item
-    if (enabledItems.length === 0) {
+    // If the section has items, it should only be included if it has at least one enabled item.
+    // If the section has no items, it should be included.
+    if (section.items.length > 0 && enabledItems.length === 0) {
       return false;
     }
 
@@ -202,6 +224,7 @@ export const RoleBasedSidebar = React.forwardRef<
   const [currentPathname, setCurrentPathname] = React.useState<string>("");
   const [menuItems, setMenuItems] = React.useState<NavData>({ navMain: [] });
   const [isMenuLoaded, setIsMenuLoaded] = React.useState(false);
+  const [openSections, setOpenSections] = React.useState<string[]>([]);
 
   // Get user roles from session
   const userRoles = session?.user?.roles || [];
@@ -211,21 +234,40 @@ export const RoleBasedSidebar = React.forwardRef<
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
-      setCurrentPathname(window.location.pathname);
+      const path = window.location.pathname;
+      setCurrentPathname(path);
 
       // Process menu data and filter by roles
-      const processedMenu = processNavDataForActiveState(
-        data,
-        window.location.pathname,
-        "Other"
-      );
+      const processedMenu = processNavDataForActiveState(data, path, "Other");
 
       const filteredMenu = filterMenuByRoles(processedMenu, userRoles);
       const enabledMenu = filterMenuByEnabled(filteredMenu);
       setMenuItems(enabledMenu);
+
+      // Initially open the section that is active
+      const activeSection = enabledMenu.navMain.find(
+        (section) => section.isActive
+      );
+      if (activeSection) {
+        setOpenSections([activeSection.title]);
+      }
+
       setIsMenuLoaded(true);
     }
   }, [data, session?.user?.roles]);
+
+  const toggleSection = (title: string) => {
+    setOpenSections((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+    );
+  };
+
+  const renderIcon = (iconName: string | undefined) => {
+    if (!iconName) return null;
+    const IconComponent = iconMap[iconName];
+    if (!IconComponent) return null;
+    return React.createElement(IconComponent, { className: "size-4" });
+  };
 
   return (
     <>
@@ -253,30 +295,54 @@ export const RoleBasedSidebar = React.forwardRef<
               <SidebarMenu>
                 {menuItems.navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={item.isActive}
-                      className="data-[active=true]:bg-accent dark:data-[active=true]:text-sidebar-primary-foreground"
-                    >
-                      <a href={item.url} className="font-medium">
-                        {item.title}
-                      </a>
-                    </SidebarMenuButton>
-                    {item.items?.length ? (
-                      <SidebarMenuSub>
-                        {item.items.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={subItem.isActive}
-                              className="data-[active=true]:bg-accent dark:data-[active=true]:text-sidebar-primary-foreground"
-                            >
-                              <a href={subItem.url}>{subItem.title}</a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    ) : null}
+                    {item.items?.length > 0 ? (
+                      <>
+                        <SidebarMenuButton
+                          onClick={() => toggleSection(item.title)}
+                          className="font-medium"
+                          isActive={item.isActive}
+                        >
+                          <div className="flex items-center gap-2">
+                            {openSections.includes(item.title) ? (
+                              <ChevronDown className="size-4" />
+                            ) : (
+                              <ChevronRight className="size-4" />
+                            )}
+                            {renderIcon(item.icon)}
+                            <span>{item.title}</span>
+                          </div>
+                        </SidebarMenuButton>
+                        {openSections.includes(item.title) && (
+                          <SidebarMenuSub>
+                            {item.items.map((subItem) => (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={subItem.isActive}
+                                  className="data-[active=true]:bg-accent dark:data-[active=true]:text-sidebar-primary-foreground"
+                                >
+                                  <a href={subItem.url}>{subItem.title}</a>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        )}
+                      </>
+                    ) : (
+                      <SidebarMenuButton
+                        asChild
+                        isActive={item.isActive}
+                        className="data-[active=true]:bg-accent dark:data-[active=true]:text-sidebar-primary-foreground"
+                      >
+                        <a
+                          href={item.url}
+                          className="font-medium flex items-center gap-2"
+                        >
+                          {renderIcon(item.icon)}
+                          {item.title}
+                        </a>
+                      </SidebarMenuButton>
+                    )}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -303,3 +369,4 @@ export const RoleBasedSidebar = React.forwardRef<
 });
 
 RoleBasedSidebar.displayName = "RoleBasedSidebar";
+

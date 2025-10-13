@@ -64,11 +64,11 @@ export function AdaptiveFilterLayout({
               <Filter className="h-4 w-4" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right">
-            <SheetHeader>
+          <SheetContent side="right" className="p-0">
+            <SheetHeader className="p-4">
               <SheetTitle>Filters</SheetTitle>
             </SheetHeader>
-            <ScrollArea className="h-[calc(100%-4rem)] p-4">
+            <ScrollArea className="h-[calc(100%-4rem)] p-2">
               {FilterPanel}
             </ScrollArea>
           </SheetContent>

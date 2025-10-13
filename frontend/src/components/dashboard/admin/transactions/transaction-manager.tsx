@@ -93,13 +93,13 @@ export default function TransactionManager({
     status?: TransactionStatus;
   }>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<ClientTransaction | null>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<ClientTransaction | null>(null);
   const [isStartDatePopoverOpen, setIsStartDatePopoverOpen] = useState(false);
   const [isEndDatePopoverOpen, setIsEndDatePopoverOpen] = useState(false);
   const [clientSearchTerm, setClientSearchTerm] = useState("");
-  const [searchedClients, setSearchedClients] = useState<ClientSearchResult[]>(
-    initialClients
-  );
+  const [searchedClients, setSearchedClients] =
+    useState<ClientSearchResult[]>(initialClients);
   const [isSearching, startSearch] = useTransition();
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
@@ -119,9 +119,7 @@ export default function TransactionManager({
     if (result.success && result.data) {
       toast.success("Transaction updated successfully!");
       setTransactions(
-        transactions.map((tx) =>
-          tx.id === result.data.id ? result.data : tx
-        )
+        transactions.map((tx) => (tx.id === result.data.id ? result.data : tx))
       );
       setIsDialogOpen(false);
       setEditingTransaction(null);
@@ -221,7 +219,7 @@ export default function TransactionManager({
                 setFilters({ ...filters, clientId: value })
               }
               placeholder="Filter by Client"
-              searchPlaceholder="Search clients..."
+              searchPlaceholder="Filter by client name or email..."
               noResultsText="No clients found."
               onSearchChange={setClientSearchTerm}
             />
@@ -344,23 +342,34 @@ export default function TransactionManager({
           <Button className="w-full md:flex-1" onClick={() => setFilters({})}>
             Clear Filters
           </Button>
-          <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
-            setIsDialogOpen(isOpen);
-            if (!isOpen) {
-              setEditingTransaction(null);
-            }
-          }}>
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(isOpen) => {
+              setIsDialogOpen(isOpen);
+              if (!isOpen) {
+                setEditingTransaction(null);
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="w-full md:flex-1">Add Transaction</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingTransaction ? "Edit Transaction" : "Add New Transaction"}</DialogTitle>
+                <DialogTitle>
+                  {editingTransaction
+                    ? "Edit Transaction"
+                    : "Add New Transaction"}
+                </DialogTitle>
               </DialogHeader>
               <TransactionForm
                 transaction={editingTransaction ?? undefined}
                 clients={clients}
-                onSubmit={editingTransaction ? handleUpdateTransaction : handleCreateTransaction}
+                onSubmit={
+                  editingTransaction
+                    ? handleUpdateTransaction
+                    : handleCreateTransaction
+                }
                 onCancel={() => {
                   setIsDialogOpen(false);
                   setEditingTransaction(null);
@@ -368,7 +377,12 @@ export default function TransactionManager({
               />
             </DialogContent>
           </Dialog>
-                    <Button className="w-full md:flex-1" onClick={() => setIsImportDialogOpen(true)}>Import Payments</Button>
+          <Button
+            className="w-full md:flex-1"
+            onClick={() => setIsImportDialogOpen(true)}
+          >
+            Import Payments
+          </Button>
         </div>
       </div>
       <Table>
@@ -397,12 +411,20 @@ export default function TransactionManager({
               <TableCell>{tx.total.toFixed(2)}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleEdit(tx)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEdit(tx)}
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -428,7 +450,10 @@ export default function TransactionManager({
           ))}
         </TableBody>
       </Table>
-      <ImportPaymentsDialog isOpen={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)} />
+      <ImportPaymentsDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+      />
     </div>
   );
 }

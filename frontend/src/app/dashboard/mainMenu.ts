@@ -5,12 +5,14 @@ const menuDefinition: NavData = {
     {
       title: "Home",
       url: "/dashboard",
+      icon: "Home",
       items: [],
       roles: ["SystemAdmin", "Admin", "Client"], // All authenticated users
     },
     {
       title: "Client",
       url: "/dashboard/client",
+      icon: "User",
       roles: ["SystemAdmin", "Admin", "Client"], // All authenticated users
       items: [
         {
@@ -39,6 +41,7 @@ const menuDefinition: NavData = {
     {
       title: "Trainer",
       url: "/dashboard/trainer",
+      icon: "Users",
       roles: ["SystemAdmin", "Admin"],
       items: [
         {
@@ -62,6 +65,7 @@ const menuDefinition: NavData = {
     {
       title: "Admin",
       url: "/dashboard/admin",
+      icon: "Shield",
       roles: ["SystemAdmin", "Admin"], // Only SystemAdmin and Admin
       items: [
         {
@@ -81,6 +85,7 @@ const menuDefinition: NavData = {
     {
       title: "Settings",
       url: "/dashboard/settings",
+      icon: "Settings",
       roles: ["SystemAdmin", "Admin"],
       items: [
         {
@@ -96,6 +101,7 @@ const menuDefinition: NavData = {
     {
       title: "Experimental",
       url: "/dashboard/experimental",
+      icon: "FlaskConical",
       roles: ["SystemAdmin"], // Only SystemAdmin
       items: [
         {

@@ -29,9 +29,6 @@ const fetchPage = async (slug: string | string[]) => {
     }
   );
 
-  console.log("Fetching page with slug:", slug);
-  console.log(`${apiUrl}/api/pages?filters[slug][$eq]=${slug}&${query}`);
-
   const response = await fetch(
     `${apiUrl}/api/pages?filters[slug][$eq]=${slug}&${query}`
   );
