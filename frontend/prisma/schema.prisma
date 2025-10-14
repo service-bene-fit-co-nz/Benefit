@@ -206,6 +206,14 @@ model ClientNote {
   client         Client?        @relation(fields: [clientId], references: [id], onDelete: Cascade)
 }
 
+model Prompt {
+  id      String  @id @default(cuid())
+  title   String
+  prompt  String
+  current Boolean @default(true)
+  type    PromptType @default(Trainer)
+}
+
 enum TransactionStatus {
   Pending
   Complete
@@ -251,4 +259,8 @@ enum ClientNoteType {
   ClientNote
   FitnessTrackerEntry
   HabitEntry
+}
+
+enum PromptType {
+  Trainer
 }

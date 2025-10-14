@@ -15,8 +15,14 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Combobox } from "@/components/ui/combobox";
 import { useQuery } from "@tanstack/react-query";
-import { fetchClientsForTrainer, ClientForTrainer } from "@/server-actions/trainer/clients/actions";
-import { fetchClientForms, ClientForm, } from "@/server-actions/client/notes/actions";
+import {
+  fetchClientsForTrainer,
+  ClientForTrainer,
+} from "@/server-actions/trainer/clients/actions";
+import {
+  fetchClientForms,
+  ClientForm,
+} from "@/server-actions/client/notes/actions";
 import { toast } from "sonner";
 import {
   TooltipProvider,
@@ -134,7 +140,12 @@ interface SummaryFilterPanelProps {
   selectedClient?: ClientForTrainer; // Add selectedClient to props
 }
 
-export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelection, selectedClient }: SummaryFilterPanelProps) => {
+export const SummaryFilterPanel = ({
+  addBadge,
+  onClientSelect,
+  clearClientSelection,
+  selectedClient,
+}: SummaryFilterPanelProps) => {
   const [searchText, setSearchText] = useState("");
   const [openSections, setOpenSections] = useState<string[]>(["clients"]);
   // selectedItems will now primarily manage non-client selections, and client selection will be derived
@@ -144,7 +155,9 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
   const [selectedProgram, setSelectedProgram] = useState<string | undefined>(
     undefined
   );
-  const [manuallySelectedClientId, setManuallySelectedClientId] = useState<string | null>(null);
+  const [manuallySelectedClientId, setManuallySelectedClientId] = useState<
+    string | null
+  >(null);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const {
@@ -188,11 +201,17 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
   }, [fetchFormsError]);
 
   useEffect(() => {
-    if (searchText) { // If there's search text, manage selection based on search results
+    if (searchText) {
+      // If there's search text, manage selection based on search results
       if (fetchedClients.length > 0) {
         // Auto-select the first client if no manual selection has occurred,
         // or if the manually selected client is no longer in the fetched results.
-        if (!manuallySelectedClientId || !fetchedClients.some(client => client.id === manuallySelectedClientId)) {
+        if (
+          !manuallySelectedClientId ||
+          !fetchedClients.some(
+            (client) => client.id === manuallySelectedClientId
+          )
+        ) {
           onClientSelect(fetchedClients[0]);
           handleItemSelect("clients", fetchedClients[0].id); // Update local state for highlighting
           setManuallySelectedClientId(null); // Reset manual selection flag for auto-selection
@@ -202,7 +221,8 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
         onClientSelect(undefined);
         setManuallySelectedClientId(null); // Clear manual selection flag
       }
-    } else { // If searchText is empty
+    } else {
+      // If searchText is empty
       // Clear selection if a client is currently selected (from a previous search or auto-selection)
       // and reset manual selection flag.
       if (selectedClient) {
@@ -210,7 +230,13 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
       }
       setManuallySelectedClientId(null); // Always clear manual selection flag when search text is empty
     }
-  }, [fetchedClients, searchText, onClientSelect, selectedClient, manuallySelectedClientId]);
+  }, [
+    fetchedClients,
+    searchText,
+    onClientSelect,
+    selectedClient,
+    manuallySelectedClientId,
+  ]);
 
   const toggleSection = (id: string) => {
     setOpenSections((prev) =>
@@ -239,7 +265,10 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
       itemsToRender = category.data || [];
     }
 
-    const selectedId = category.id === "clients" ? selectedClient?.id : selectedItems[category.id];
+    const selectedId =
+      category.id === "clients"
+        ? selectedClient?.id
+        : selectedItems[category.id];
 
     if (isLoading) {
       return (
@@ -270,7 +299,9 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
                 <div
                   onClick={() => {
                     if (category.id === "clients") {
-                      const selectedClientData = fetchedClients.find(client => client.id === item.id);
+                      const selectedClientData = fetchedClients.find(
+                        (client) => client.id === item.id
+                      );
                       onClientSelect(selectedClientData);
                       handleItemSelect(category.id, item.id); // Update local state for highlighting
                       setManuallySelectedClientId(item.id); // Mark as manual selection
@@ -317,7 +348,7 @@ export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelect
     <TooltipProvider>
       <div className="h-full bg-card text-card-foreground p-2 space-y-1">
         {isDesktop && (
-          <h2 className="text-lg font-medium mb-4 px-2">Summary Filter</h2>
+          <h2 className="text-lg font-medium mb-4 px-2">Client Context</h2>
         )}
 
         {isDesktop && (

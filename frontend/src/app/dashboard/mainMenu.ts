@@ -80,6 +80,10 @@ const menuDefinition: NavData = {
           title: "Transactions",
           url: "/dashboard/admin/transactions",
         },
+        {
+          title: "Prompts",
+          url: "/dashboard/admin/prompts",
+        },
       ],
     },
     {
