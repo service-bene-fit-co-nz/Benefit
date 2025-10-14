@@ -27,6 +27,7 @@ interface ComboboxProps {
   noResultsText?: string;
   onSearchChange?: (search: string) => void;
   modal?: boolean;
+  className?: string;
 }
 
 export function Combobox({
@@ -38,6 +39,7 @@ export function Combobox({
   noResultsText = "No option found.",
   onSearchChange,
   modal = false,
+  className,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -48,7 +50,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between", !value && "text-muted-foreground")}
+          className={cn("w-full justify-between", className, !value && "text-muted-foreground")}
         >
           {value ? (
             <span className="block truncate flex-1">

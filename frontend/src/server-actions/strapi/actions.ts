@@ -96,7 +96,6 @@ export async function submitForm(
         noteMetadata: {
           noteType: "Client Form",
           formId: formId,
-          formData: formData,
           formUniqueName: formUniqueName,
         },
       },
