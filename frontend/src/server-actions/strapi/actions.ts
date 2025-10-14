@@ -7,34 +7,25 @@ import { ClientNotePayload, SubmissionResult, SubmissionType } from "./types";
 
 // Helper to get client ID from session or form email
 async function getClientId(formEmail?: string): Promise<string | null> {
-  const session = await getServerSession(authOptions);
   let clientId: string | null = null;
 
-  // 1. Try to get client ID from authenticated session
-  if (session?.user?.id) {
-    const client = await prisma.client.findUnique({
-      where: { authId: session.user.id },
+  if (formEmail) {
+    // 1. Find user by email in the auth table
+    const user = await prisma.user.findUnique({
+      where: { email: formEmail },
       select: { id: true },
     });
-    if (client) {
-      clientId = client.id;
-    }
-  }
 
-  // 2. If not found via session, try to find by email in form data
-  // Assuming contactInfo is Json and has an email field, e.g., [{ type: 'email', value: 'test@example.com', primary: true }]
-  if (!clientId && formEmail) {
-    const client = await prisma.client.findFirst({
-      where: {
-        contactInfo: {
-          path: ["email", "value"], // Adjust path based on actual JSON structure
-          string_contains: formEmail,
-        },
-      },
-      select: { id: true },
-    });
-    if (client) {
-      clientId = client.id;
+    if (user) {
+      // 2. Find client by authId
+      const client = await prisma.client.findUnique({
+        where: { authId: user.id },
+        select: { id: true },
+      });
+
+      if (client) {
+        clientId = client.id;
+      }
     }
   }
   return clientId;
@@ -47,8 +38,9 @@ export async function submitForm(
   formUniqueName?: string
 ): Promise<SubmissionResult> {
   try {
-    const formEmail = formData.find((field) => field.name === "email")
-      ?.value as string | undefined;
+    const contactInfoField = formData.find((field) => field.name === "contactInformation");
+    const emailField = (contactInfoField?.value as any[])?.find((field) => field.name === "email");
+    const formEmail = emailField?.value as string | undefined;
     const clientId = await getClientId(formEmail);
 
     // Check for existing submission
