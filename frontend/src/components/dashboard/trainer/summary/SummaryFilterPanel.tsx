@@ -15,11 +15,8 @@ import {
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Combobox } from "@/components/ui/combobox";
 import { useQuery } from "@tanstack/react-query";
-import { fetchClientsForTrainer } from "@/server-actions/trainer/clients/actions";
-import {
-  fetchClientForms,
-  ClientForm,
-} from "@/server-actions/client/notes/actions";
+import { fetchClientsForTrainer, ClientForTrainer } from "@/server-actions/trainer/clients/actions";
+import { fetchClientForms, ClientForm, } from "@/server-actions/client/notes/actions";
 import { toast } from "sonner";
 import {
   TooltipProvider,
@@ -130,18 +127,24 @@ const filterCategories: FilterCategory[] = [
   { id: "forms", title: "Forms", icon: ClipboardList }, // No dummy data here, will be fetched
 ];
 
-// --- Component ---
+interface SummaryFilterPanelProps {
+  addBadge: (badgeText: string) => void;
+  onClientSelect: (client: ClientForTrainer | undefined) => void;
+  clearClientSelection: () => void;
+  selectedClient?: ClientForTrainer; // Add selectedClient to props
+}
 
-export const SummaryFilterPanel = () => {
+export const SummaryFilterPanel = ({ addBadge, onClientSelect, clearClientSelection, selectedClient }: SummaryFilterPanelProps) => {
   const [searchText, setSearchText] = useState("");
   const [openSections, setOpenSections] = useState<string[]>(["clients"]);
+  // selectedItems will now primarily manage non-client selections, and client selection will be derived
   const [selectedItems, setSelectedItems] = useState<{
     [key: string]: string | null;
   }>({});
   const [selectedProgram, setSelectedProgram] = useState<string | undefined>(
     undefined
   );
-
+  const [manuallySelectedClientId, setManuallySelectedClientId] = useState<string | null>(null);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const {
@@ -184,6 +187,31 @@ export const SummaryFilterPanel = () => {
     }
   }, [fetchFormsError]);
 
+  useEffect(() => {
+    if (searchText) { // If there's search text, manage selection based on search results
+      if (fetchedClients.length > 0) {
+        // Auto-select the first client if no manual selection has occurred,
+        // or if the manually selected client is no longer in the fetched results.
+        if (!manuallySelectedClientId || !fetchedClients.some(client => client.id === manuallySelectedClientId)) {
+          onClientSelect(fetchedClients[0]);
+          handleItemSelect("clients", fetchedClients[0].id); // Update local state for highlighting
+          setManuallySelectedClientId(null); // Reset manual selection flag for auto-selection
+        }
+      } else {
+        // Clear selection if search text is present but no clients are found
+        onClientSelect(undefined);
+        setManuallySelectedClientId(null); // Clear manual selection flag
+      }
+    } else { // If searchText is empty
+      // Clear selection if a client is currently selected (from a previous search or auto-selection)
+      // and reset manual selection flag.
+      if (selectedClient) {
+        onClientSelect(undefined);
+      }
+      setManuallySelectedClientId(null); // Always clear manual selection flag when search text is empty
+    }
+  }, [fetchedClients, searchText, onClientSelect, selectedClient, manuallySelectedClientId]);
+
   const toggleSection = (id: string) => {
     setOpenSections((prev) =>
       prev.includes(id) ? prev.filter((sId) => sId !== id) : [...prev, id]
@@ -211,7 +239,7 @@ export const SummaryFilterPanel = () => {
       itemsToRender = category.data || [];
     }
 
-    const selectedId = selectedItems[category.id];
+    const selectedId = category.id === "clients" ? selectedClient?.id : selectedItems[category.id];
 
     if (isLoading) {
       return (
@@ -240,7 +268,19 @@ export const SummaryFilterPanel = () => {
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
                 <div
-                  onClick={() => handleItemSelect(category.id, item.id)}
+                  onClick={() => {
+                    if (category.id === "clients") {
+                      const selectedClientData = fetchedClients.find(client => client.id === item.id);
+                      onClientSelect(selectedClientData);
+                      handleItemSelect(category.id, item.id); // Update local state for highlighting
+                      setManuallySelectedClientId(item.id); // Mark as manual selection
+                    } else {
+                      handleItemSelect(category.id, item.id);
+                      if (category.id === "forms" && isClientForm(item)) {
+                        addBadge(item.formUniqueName);
+                      }
+                    }
+                  }}
                   className={`cursor-pointer p-1 rounded hover:bg-accent ${
                     selectedId === item.id ? "bg-accent" : ""
                   }`}
@@ -309,7 +349,10 @@ export const SummaryFilterPanel = () => {
             placeholder="Filter clients by name..."
             className="w-full p-2 border border-border rounded-md text-sm bg-transparent"
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              clearClientSelection();
+            }}
           />
         </div>
 
