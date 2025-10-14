@@ -16,9 +16,17 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Combobox } from "@/components/ui/combobox";
 import { useQuery } from "@tanstack/react-query";
 import { fetchClientsForTrainer } from "@/server-actions/trainer/clients/actions";
-import { fetchClientForms, ClientForm } from "@/server-actions/client/notes/actions";
+import {
+  fetchClientForms,
+  ClientForm,
+} from "@/server-actions/client/notes/actions";
 import { toast } from "sonner";
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Helper function to format date
 const formatDate = (dateString: string | Date | undefined | null) => {
@@ -27,9 +35,9 @@ const formatDate = (dateString: string | Date | undefined | null) => {
   }
 
   let date: Date;
-  if (typeof dateString === 'string') {
+  if (typeof dateString === "string") {
     // Replace space with 'T' to make it a valid ISO 8601 string for robust parsing
-    date = new Date(dateString.replace(' ', 'T'));
+    date = new Date(dateString.replace(" ", "T"));
   } else {
     date = dateString;
   }
@@ -38,11 +46,13 @@ const formatDate = (dateString: string | Date | undefined | null) => {
     return "Invalid-Date"; // Handle invalid date cases
   }
 
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).replace(/ /g, "-");
+  return date
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .replace(/ /g, "-");
 };
 
 // --- Data Structures and Dummy Data ---
@@ -122,22 +132,35 @@ const filterCategories: FilterCategory[] = [
 
 // --- Component ---
 
-const SummaryFilterPanel = () => {
+export const SummaryFilterPanel = () => {
   const [searchText, setSearchText] = useState("");
   const [openSections, setOpenSections] = useState<string[]>(["clients"]);
-  const [selectedItems, setSelectedItems] = useState<{ [key: string]: string | null }>({});
-  const [selectedProgram, setSelectedProgram] = useState<string | undefined>(undefined);
+  const [selectedItems, setSelectedItems] = useState<{
+    [key: string]: string | null;
+  }>({});
+  const [selectedProgram, setSelectedProgram] = useState<string | undefined>(
+    undefined
+  );
 
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  const { data: fetchedClients = [], error: fetchClientsError, isLoading: isClientsLoading } = useQuery({
+  const {
+    data: fetchedClients = [],
+    error: fetchClientsError,
+    isLoading: isClientsLoading,
+  } = useQuery({
     queryKey: ["clientsForTrainer", searchText, selectedProgram],
-    queryFn: () => fetchClientsForTrainer(searchText, selectedProgram || undefined),
+    queryFn: () =>
+      fetchClientsForTrainer(searchText, selectedProgram || undefined),
   });
 
-  const selectedClientId = selectedItems['clients'];
+  const selectedClientId = selectedItems["clients"];
 
-  const { data: fetchedForms = [], error: fetchFormsError, isLoading: isFormsLoading } = useQuery({
+  const {
+    data: fetchedForms = [],
+    error: fetchFormsError,
+    isLoading: isFormsLoading,
+  } = useQuery({
     queryKey: ["clientForms", selectedClientId],
     queryFn: () => fetchClientForms(selectedClientId || ""),
     enabled: !!selectedClientId, // Only run query if a client is selected
@@ -191,7 +214,11 @@ const SummaryFilterPanel = () => {
     const selectedId = selectedItems[category.id];
 
     if (isLoading) {
-      return <div className="p-1 text-muted-foreground">Loading {category.title.toLowerCase()}...</div>;
+      return (
+        <div className="p-1 text-muted-foreground">
+          Loading {category.title.toLowerCase()}...
+        </div>
+      );
     }
 
     return (
@@ -219,15 +246,28 @@ const SummaryFilterPanel = () => {
                   }`}
                 >
                   {/* Display formUniqueName for forms, otherwise name */}
-                  {isClientForm(item) ? `${item.formUniqueName} (${formatDate(item.updatedAt)})` : (category.id === "clients" ? `${item.name} (${(item as ClientForTrainer).email})` : item.name)}
+                  {isClientForm(item)
+                    ? `${item.formUniqueName} (${formatDate(item.updatedAt)})`
+                    : category.id === "clients"
+                    ? `${item.name} (${(item as ClientForTrainer).email})`
+                    : item.name}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isClientForm(item) ? item.formUniqueName : (category.id === "clients" ? `${item.name} (${(item as ClientForTrainer).email})` : item.name)}</p>
+                <p>
+                  {isClientForm(item)
+                    ? item.formUniqueName
+                    : category.id === "clients"
+                    ? `${item.name} (${(item as ClientForTrainer).email})`
+                    : item.name}
+                </p>
               </TooltipContent>
-            </Tooltip>          ))
+            </Tooltip>
+          ))
         ) : (
-          <div className="p-1 text-muted-foreground">No {category.title.toLowerCase()} found.</div>
+          <div className="p-1 text-muted-foreground">
+            No {category.title.toLowerCase()} found.
+          </div>
         )}
       </div>
     );
@@ -236,7 +276,9 @@ const SummaryFilterPanel = () => {
   return (
     <TooltipProvider>
       <div className="h-full bg-card text-card-foreground p-2 space-y-1">
-        {isDesktop && <h2 className="text-lg font-medium mb-4 px-2">Summary Filter</h2>}
+        {isDesktop && (
+          <h2 className="text-lg font-medium mb-4 px-2">Summary Filter</h2>
+        )}
 
         {isDesktop && (
           <div className="py-1">
@@ -293,7 +335,9 @@ const SummaryFilterPanel = () => {
               </div>
               {isOpen && (
                 <div className="text-sm relative before:absolute before:left-2 before:h-full before:w-px before:bg-muted-foreground/20 before:content-['']">
-                  <div className="pl-8 py-1">{renderSectionContent(category)}</div>
+                  <div className="pl-8 py-1">
+                    {renderSectionContent(category)}
+                  </div>
                 </div>
               )}
             </div>
@@ -303,5 +347,3 @@ const SummaryFilterPanel = () => {
     </TooltipProvider>
   );
 };
-
-export default SummaryFilterPanel;
