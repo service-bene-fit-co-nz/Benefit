@@ -66,3 +66,75 @@ export async function fetchClientNotes(
     throw new Error("Failed to fetch client forms.");
   }
 }
+
+export async function createClientNote(
+  clientId: string,
+  noteContent: string,
+  noteType: ClientNoteType,
+  noteMetadata: Prisma.InputJsonValue
+): Promise<ClientNote> {
+  const session = await getServerSession(authOptions);
+
+  if (
+    !session ||
+    !session.user ||
+    !session.user.roles ||
+    !session.user.roles.some((role) =>
+      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
+        role
+      )
+    )
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!clientId || !noteContent || !noteType) {
+    throw new Error("Client ID, note content, and note type are required.");
+  }
+
+  try {
+    const newNote = await prisma.clientNote.create({
+      data: {
+        clientId: clientId,
+        formData: { content: noteContent }, // Assuming formData stores the content
+        noteMetadata: noteMetadata,
+        noteType: noteType,
+        formId: "manual-note-" + Date.now(), // A dummy formId for manual notes
+      },
+    });
+    return newNote;
+  } catch (error) {
+    console.error(`Error creating client note for client ID ${clientId}:`, error);
+    throw new Error("Failed to create client note.");
+  }
+}
+
+export async function deleteClientNote(noteId: string): Promise<void> {
+  const session = await getServerSession(authOptions);
+
+  if (
+    !session ||
+    !session.user ||
+    !session.user.roles ||
+    !session.user.roles.some((role) =>
+      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
+        role
+      )
+    )
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!noteId) {
+    throw new Error("Note ID is required.");
+  }
+
+  try {
+    await prisma.clientNote.delete({
+      where: { id: noteId },
+    });
+  } catch (error) {
+    console.error(`Error deleting client note with ID ${noteId}:`, error);
+    throw new Error("Failed to delete client note.");
+  }
+}

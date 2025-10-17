@@ -11,18 +11,17 @@ import {
   ChevronRight,
   Plus,
   ListFilter,
+  Trash2,
 } from "lucide-react";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Combobox } from "@/components/ui/combobox";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import {
   fetchClientsForTrainer,
   ClientForTrainer,
 } from "@/server-actions/trainer/clients/actions";
-import {
-  fetchClientNotes,
-  ClientNote,
-} from "@/server-actions/client/notes/actions";
+import { fetchClientNotes, ClientNote, createClientNote, deleteClientNote } from "@/server-actions/client/notes/actions";
 import { toast } from "sonner";
 import {
   TooltipProvider,
@@ -32,6 +31,15 @@ import {
 } from "@/components/ui/tooltip";
 import { formatDate_DD_Mmm_YYYY } from "@/utils/date-utils";
 import { ClientNoteType } from "@prisma/client";
+import { AddNoteForm, NoteFormValues } from "./AddNoteForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // --- Helper Functions ---
 function isClientContext(item: any): item is ClientContext {
@@ -143,7 +151,9 @@ export const SummaryFilterPanel = ({
   const [manuallySelectedClientId, setManuallySelectedClientId] = useState<
     string | null
   >(null);
+  const [isAddNoteFormOpen, setIsAddNoteFormOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const queryClient = useQueryClient();
 
   // ------------------------------ Data Fetching ------------------------------
   const {
@@ -169,6 +179,68 @@ export const SummaryFilterPanel = ({
   });
 
   console.log("fetchedNotes:", fetchedNotes);
+
+  const { data: session } = useSession();
+  const loggedInUserName = session?.user?.name || "Unknown Trainer";
+
+  const selectedClientData = fetchedClients.find(
+    (client) => client.id === selectedItems["clients"]
+  );
+  const selectedClientName = selectedClientData?.name || "Unknown Client";
+
+  const onAddNoteSubmit = async (values: NoteFormValues) => {
+    if (!selectedClientId) {
+      toast.error("No client selected", {
+        description: "Please select a client before adding a note.",
+      });
+      return;
+    }
+
+    let authorName: string;
+    switch (values.noteType) {
+      case ClientNoteType.AINote:
+      case ClientNoteType.TrainerNote:
+        authorName = loggedInUserName;
+        break;
+      case ClientNoteType.ClientNote:
+        authorName = selectedClientName;
+        break;
+      default:
+        authorName = "Unknown";
+    }
+
+    try {
+      await createClientNote(
+        selectedClientId,
+        values.note,
+        values.noteType,
+        { author: authorName, title: values.note.substring(0, 50) + "..." } // Use first 50 chars as title
+      );
+      toast.success("Note added successfully!");
+      setIsAddNoteFormOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["clientNotes", selectedClientId] });
+    } catch (error) {
+      toast.error("Failed to add note", {
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    }
+  };
+
+  const onAddNoteCancel = () => {
+    setIsAddNoteFormOpen(false);
+  };
+
+  const onDeleteNote = async (noteId: string) => {
+    try {
+      await deleteClientNote(noteId);
+      toast.success("Note deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["clientNotes", selectedClientId] });
+    } catch (error) {
+      toast.error("Failed to delete note", {
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    }
+  };
 
   // ------------------------------ Effects and Handlers ------------------------------
   // useEffect(() => {
@@ -284,14 +356,32 @@ export const SummaryFilterPanel = ({
 
     return (
       <div className="max-h-48 overflow-y-auto">
-        {category.showAddNew && (
-          <div
-            onClick={() => console.log("Add new for", category.id)}
-            className="flex items-center cursor-pointer p-1 rounded hover:bg-accent"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New
-          </div>
+        {category.showAddNew && category.id === "notes" && !!selectedClientId && (
+          <Dialog open={isAddNoteFormOpen} onOpenChange={setIsAddNoteFormOpen}>
+            <DialogTrigger asChild>
+              <div
+                className="flex items-center cursor-pointer p-1 rounded hover:bg-accent"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New
+              </div>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Note</DialogTitle>
+                <DialogDescription>
+                  Add a new note for the selected client.
+                </DialogDescription>
+              </DialogHeader>
+              <AddNoteForm
+                onSubmit={onAddNoteSubmit}
+                onCancel={onAddNoteCancel}
+                isSubmitting={false} // You might want to manage this state
+                selectedClientName={selectedClientName}
+                loggedInUserName={loggedInUserName}
+              />
+            </DialogContent>
+          </Dialog>
         )}
 
         {itemsToRender.length > 0 ? (
@@ -321,7 +411,19 @@ export const SummaryFilterPanel = ({
                   {isClientContext(item)
                     ? `${item.name} (${item.email})`
                     : isClientNote(item)
-                    ? getClientNoteDisplayName(item)
+                    ? (
+                        <div className="flex justify-between items-center">
+                          <span>{getClientNoteDisplayName(item)}</span>
+                          {category.id === "notes" && (
+                            <span onClick={(e) => {
+                              e.stopPropagation(); // Prevent selecting the item
+                              onDeleteNote(item.id);
+                            }}>
+                              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                            </span>
+                          )}
+                        </div>
+                      )
                     : "Unknown"}
                 </div>
               </TooltipTrigger>
