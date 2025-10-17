@@ -101,7 +101,7 @@ const getLLM = (
       }
       return new ChatGoogleGenerativeAI({
         apiKey: apiKey,
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         temperature: 0.7,
       });
     }
@@ -123,7 +123,7 @@ const getLLM = (
       }
       return new ChatGroq({
         apiKey: apiKey,
-        model: "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         temperature: 0.7,
       });
     }
