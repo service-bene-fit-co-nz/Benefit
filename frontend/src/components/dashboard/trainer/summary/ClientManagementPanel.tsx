@@ -3,7 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Combobox } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
-import { fetchPrompts as serverFetchPrompts, PromptData } from "@/server-actions/admin/prompts/actions";
+import {
+  fetchPrompts as serverFetchPrompts,
+  PromptData,
+} from "@/server-actions/admin/prompts/actions";
+import { AIChat } from "@/components/ai/AIChat";
 
 interface ClientForTrainer {
   id: string;
@@ -40,7 +44,9 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
   selectedClient,
 }) => {
   const [prompts, setPrompts] = useState<PromptData[]>([]);
-  const [selectedPromptId, setSelectedPromptId] = useState<string | undefined>(undefined);
+  const [selectedPromptId, setSelectedPromptId] = useState<string | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     const loadPrompts = async () => {
@@ -54,7 +60,7 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
     loadPrompts();
   }, []);
 
-  const promptOptions = prompts.map(p => ({ label: p.title, value: p.id }));
+  const promptOptions = prompts.map((p) => ({ label: p.title, value: p.id }));
 
   return (
     <div>
@@ -79,24 +85,18 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
         </div>
       ) : (
         <div className="p-4 bg-muted rounded-lg mb-4 text-center text-muted-foreground">
-          <p>Please select a client from the Summary Filter Panel to view their details.</p>
+          <p>
+            Please select a client from the Summary Filter Panel to view their
+            details.
+          </p>
         </div>
       )}
 
-      {selectedClient && (
-        <div className="mb-4">
-          <Label htmlFor="prompt-select" className="sr-only">Select Prompt</Label>
-          <Combobox
-            options={promptOptions}
-            value={selectedPromptId}
-            onValueChange={setSelectedPromptId}
-            placeholder="Select a prompt..."
-            className="w-full"
-          />
-        </div>
-      )}
-
-      <div className={`flex flex-wrap gap-2 mb-4 ${contextBadges.length > 0 ? 'border border-dashed p-4 rounded-md' : ''}`}>
+      <div
+        className={`flex flex-wrap gap-2 mb-4 ${
+          contextBadges.length > 0 ? "border border-dashed p-4 rounded-md" : ""
+        }`}
+      >
         {contextBadges.length > 0
           ? contextBadges.map((badgeText, index) => (
               <Badge key={index} variant="secondary">
@@ -109,6 +109,22 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
               </p>
             )}
       </div>
+      {selectedClient && (
+        <div className="mb-4">
+          <Combobox
+            options={promptOptions}
+            value={selectedPromptId}
+            onValueChange={setSelectedPromptId}
+            placeholder="Select a fitness persona..."
+            className="w-full"
+          />
+        </div>
+      )}
+      {selectedClient && (
+        <div className="mt-4">
+          <AIChat />
+        </div>
+      )}
     </div>
   );
 };
