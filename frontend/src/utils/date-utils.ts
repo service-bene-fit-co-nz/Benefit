@@ -17,3 +17,31 @@ export const normalizeDateString = (date: string): Date => {
   d.setUTCHours(0, 0, 0, 0);
   return d;
 };
+
+export const formatDate_DD_Mmm_YYYY = (
+  dateString: string | Date | undefined | null
+) => {
+  if (!dateString) {
+    return ""; // Or a default like "N/A" or "-"
+  }
+
+  let date: Date;
+  if (typeof dateString === "string") {
+    // Replace space with 'T' to make it a valid ISO 8601 string for robust parsing
+    date = new Date(dateString.replace(" ", "T"));
+  } else {
+    date = dateString;
+  }
+
+  if (isNaN(date.getTime())) {
+    return "Invalid-Date"; // Handle invalid date cases
+  }
+
+  return date
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
+    .replace(/ /g, "-");
+};

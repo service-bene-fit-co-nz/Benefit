@@ -4,18 +4,20 @@
 import prisma from "@/utils/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Prisma, UserRole } from "@prisma/client"; // Added Prisma
+import { Prisma, UserRole, ClientNoteType } from "@prisma/client";
 
-export interface ClientForm {
+export interface ClientNote {
   id: string;
-  formUniqueName: string;
   noteMetadata: Prisma.JsonValue;
-  updatedAt: Date; // Added updatedAt
+  formData: Prisma.JsonValue;
+  updatedAt: Date;
+  noteType: ClientNoteType;
 }
 
-export async function fetchClientForms(
-  clientId: string
-): Promise<ClientForm[]> {
+export async function fetchClientNotes(
+  clientId: string,
+  noteTypes: ClientNoteType[] | undefined = undefined
+): Promise<ClientNote[]> {
   const session = await getServerSession(authOptions);
 
   if (
@@ -23,9 +25,9 @@ export async function fetchClientForms(
     !session.user ||
     !session.user.roles ||
     !session.user.roles.some((role) =>
-      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
-        role
-      )
+      (
+        [UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]
+      ).includes(role)
     )
   ) {
     throw new Error("Unauthorized");
@@ -35,28 +37,32 @@ export async function fetchClientForms(
     return [];
   }
 
+  const where: Prisma.ClientNoteWhereInput = {
+    clientId: clientId,
+  };
+
+  if (noteTypes && noteTypes.length > 0) {
+    where.noteType = { in: noteTypes };
+  }
+
   try {
     const clientNotes = await prisma.clientNote.findMany({
-      where: {
-        clientId: clientId,
-        noteType: "ClientForm",
-      },
+      where: where,
       select: {
         id: true,
-        formUniqueName: true,
+        formData: true,
         noteMetadata: true,
-        updatedAt: true, // Added updatedAt
+        updatedAt: true,
+        noteType: true,
       },
     });
 
-    return clientNotes.map((note) => ({
-      id: note.id,
-      formUniqueName: note.formUniqueName || "Unnamed Form", // Provide a fallback
-      noteMetadata: note.noteMetadata,
-      updatedAt: note.updatedAt, // Mapped updatedAt
-    }));
+    return clientNotes;
   } catch (error) {
-    console.error(`Error fetching client forms for client ID ${clientId}:`, error);
+    console.error(
+      `Error fetching client forms for client ID ${clientId}:`,
+      error
+    );
     throw new Error("Failed to fetch client forms.");
   }
 }

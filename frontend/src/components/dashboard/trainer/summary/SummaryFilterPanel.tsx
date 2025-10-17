@@ -20,8 +20,8 @@ import {
   ClientForTrainer,
 } from "@/server-actions/trainer/clients/actions";
 import {
-  fetchClientForms,
-  ClientForm,
+  fetchClientNotes,
+  ClientNote,
 } from "@/server-actions/client/notes/actions";
 import { toast } from "sonner";
 import {
@@ -30,107 +30,91 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { formatDate_DD_Mmm_YYYY } from "@/utils/date-utils";
+import { ClientNoteType } from "@prisma/client";
 
-// Helper function to format date
-const formatDate = (dateString: string | Date | undefined | null) => {
-  if (!dateString) {
-    return ""; // Or a default like "N/A" or "-"
+// --- Helper Functions ---
+function isClientContext(item: any): item is ClientContext {
+  return (
+    (item as ClientContext).name !== undefined &&
+    (item as ClientContext).email !== undefined
+  );
+}
+
+function isClientNote(item: any): item is ClientNote {
+  return (item as ClientNote).noteType !== undefined;
+}
+
+const getClientNoteDisplayName = (note: ClientNote): string => {
+  const metadata = note.noteMetadata as any;
+  const formattedDate = formatDate_DD_Mmm_YYYY(new Date(note.updatedAt));
+  switch (note.noteType) {
+    case "ClientForm":
+      const formName = metadata?.formUniqueName || "Form";
+      return `${formName} (${formattedDate})`;
+    case "AINote":
+    case "TrainerNote":
+    case "ClientNote":
+      const author = metadata?.author || "Note";
+      const noteTypeString = note.noteType.replace("Note", "");
+      return `${author} (${noteTypeString}, ${formattedDate})`
+    case "ClientEmail":
+      return metadata?.subject || "Email";
+    case "FitnessTrackerEntry":
+      return metadata?.activity || "Fitness Entry";
+    case "HabitEntry":
+      return metadata?.habit || "Habit Entry";
+    default:
+      return "Entry";
   }
-
-  let date: Date;
-  if (typeof dateString === "string") {
-    // Replace space with 'T' to make it a valid ISO 8601 string for robust parsing
-    date = new Date(dateString.replace(" ", "T"));
-  } else {
-    date = dateString;
-  }
-
-  if (isNaN(date.getTime())) {
-    return "Invalid-Date"; // Handle invalid date cases
-  }
-
-  return date
-    .toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-    .replace(/ /g, "-");
 };
 
 // --- Data Structures and Dummy Data ---
-
-interface DataItem {
-  id: string;
-  name: string;
-}
-
-function isClientForm(item: DataItem | ClientForm): item is ClientForm {
-  return (item as ClientForm).formUniqueName !== undefined;
-}
-
 interface ProgramItem {
   value: string;
   label: string;
 }
 
-const allClients: DataItem[] = [
-  { id: "c1", name: "Brent Edwards" },
-  { id: "c2", name: "Jane Doe" },
-  { id: "c3", name: "John Smith" },
-  { id: "c4", name: "Alice Johnson" },
-  { id: "c5", name: "Bob Williams" },
-  { id: "c6", name: "Charlie Brown" },
-  { id: "c7", name: "Diana Prince" },
-  { id: "c8", name: "Bruce Wayne" },
-];
+interface ClientContext {
+  id: string;
+  name: string;
+  email: string;
+  updatedAt: Date | undefined;
+}
 
-const dummyHabits: DataItem[] = [
-  { id: "h1", name: "Drink 8 glasses of water" },
-  { id: "h2", name: "Walk 10,000 steps" },
-  { id: "h3", name: "Read for 15 minutes" },
-];
-
-const dummyFitness: DataItem[] = [
-  { id: "f1", name: "Morning Run" },
-  { id: "f2", name: "Yoga Session" },
-];
-
-const dummyEmails: DataItem[] = [
-  { id: "e1", name: "Welcome Email" },
-  { id: "e2", name: "Weekly Check-in" },
-];
-
-const dummyNotes: DataItem[] = [
-  { id: "n1", name: "Initial Consultation Notes" },
-  { id: "n2", name: "Follow-up call" },
-];
-
-const dummyPrograms: ProgramItem[] = [
-  { value: "program-a", label: "Program A" },
-  { value: "program-b", label: "Program B" },
-  { value: "program-c", label: "Program C" },
-];
-
-interface FilterCategory {
+interface ContextSection {
   id: string;
   title: string;
   icon: React.ElementType;
-  data?: DataItem[] | ClientForm[]; // Allow ClientForm[] for forms
+  data?: ClientContext[] | ClientNote[];
+  showAddNew: boolean;
 }
 
-const filterCategories: FilterCategory[] = [
-  { id: "clients", title: "Clients", icon: Users }, // No dummy data here
-  { id: "habits", title: "Habits", icon: HeartPulse, data: dummyHabits },
+const filterCategories: ContextSection[] = [
+  { id: "clients", title: "Clients", icon: Users, data: [], showAddNew: false },
+  {
+    id: "habits",
+    title: "Habits",
+    icon: HeartPulse,
+    data: [],
+    showAddNew: true,
+  },
   {
     id: "fitness-tracker",
     title: "Fitness Tracker",
     icon: Activity,
-    data: dummyFitness,
+    data: [],
+    showAddNew: true,
   },
-  { id: "email", title: "Email", icon: Mail, data: dummyEmails },
-  { id: "notes", title: "Notes", icon: FileText, data: dummyNotes },
-  { id: "forms", title: "Forms", icon: ClipboardList }, // No dummy data here, will be fetched
+  { id: "notes", title: "Notes", icon: FileText, data: [], showAddNew: true },
+  { id: "email", title: "Email", icon: Mail, data: [], showAddNew: false },
+  {
+    id: "forms",
+    title: "Forms",
+    icon: ClipboardList,
+    data: [],
+    showAddNew: false,
+  },
 ];
 
 interface SummaryFilterPanelProps {
@@ -146,6 +130,7 @@ export const SummaryFilterPanel = ({
   clearClientSelection,
   selectedClient,
 }: SummaryFilterPanelProps) => {
+  // ------------------------------ State Management ------------------------------
   const [searchText, setSearchText] = useState("");
   const [openSections, setOpenSections] = useState<string[]>(["clients"]);
   // selectedItems will now primarily manage non-client selections, and client selection will be derived
@@ -160,6 +145,7 @@ export const SummaryFilterPanel = ({
   >(null);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
+  // ------------------------------ Data Fetching ------------------------------
   const {
     data: fetchedClients = [],
     error: fetchClientsError,
@@ -173,39 +159,39 @@ export const SummaryFilterPanel = ({
   const selectedClientId = selectedItems["clients"];
 
   const {
-    data: fetchedForms = [],
-    error: fetchFormsError,
-    isLoading: isFormsLoading,
+    data: fetchedNotes = [],
+    error: fetchNotesError,
+    isLoading: isNotesLoading,
   } = useQuery({
-    queryKey: ["clientForms", selectedClientId],
-    queryFn: () => fetchClientForms(selectedClientId || ""),
+    queryKey: ["clientNotes", selectedClientId],
+    queryFn: () => fetchClientNotes(selectedClientId || ""),
     enabled: !!selectedClientId, // Only run query if a client is selected
   });
 
-  useEffect(() => {
-    if (fetchClientsError) {
-      console.error("Failed to fetch clients:", fetchClientsError);
-      toast.error("Failed to load clients", {
-        description: "Could not retrieve client list.",
-      });
-    }
-  }, [fetchClientsError]);
+  console.log("fetchedNotes:", fetchedNotes);
 
-  useEffect(() => {
-    if (fetchFormsError) {
-      console.error("Failed to fetch forms:", fetchFormsError);
-      toast.error("Failed to load forms", {
-        description: "Could not retrieve client forms.",
-      });
-    }
-  }, [fetchFormsError]);
+  // ------------------------------ Effects and Handlers ------------------------------
+  // useEffect(() => {
+  //   if (fetchClientsError) {
+  //     console.error("Failed to fetch clients:", fetchClientsError);
+  //     toast.error("Failed to load clients", {
+  //       description: "Could not retrieve client list.",
+  //     });
+  //   }
+  // }, [fetchClientsError]);
+
+  // useEffect(() => {
+  //   if (fetchNotesError) {
+  //     console.error("Failed to fetch notes:", fetchNotesError);
+  //     toast.error("Failed to load notes", {
+  //       description: "Could not retrieve client notes.",
+  //     });
+  //   }
+  // }, [fetchNotesError]);
 
   useEffect(() => {
     if (searchText) {
-      // If there's search text, manage selection based on search results
       if (fetchedClients.length > 0) {
-        // Auto-select the first client if no manual selection has occurred,
-        // or if the manually selected client is no longer in the fetched results.
         if (
           !manuallySelectedClientId ||
           !fetchedClients.some(
@@ -213,22 +199,10 @@ export const SummaryFilterPanel = ({
           )
         ) {
           onClientSelect(fetchedClients[0]);
-          handleItemSelect("clients", fetchedClients[0].id); // Update local state for highlighting
-          setManuallySelectedClientId(null); // Reset manual selection flag for auto-selection
+          handleItemSelect("clients", fetchedClients[0].id);
+          setManuallySelectedClientId(null);
         }
-      } else {
-        // Clear selection if search text is present but no clients are found
-        onClientSelect(undefined);
-        setManuallySelectedClientId(null); // Clear manual selection flag
       }
-    } else {
-      // If searchText is empty
-      // Clear selection if a client is currently selected (from a previous search or auto-selection)
-      // and reset manual selection flag.
-      if (selectedClient) {
-        onClientSelect(undefined);
-      }
-      setManuallySelectedClientId(null); // Always clear manual selection flag when search text is empty
     }
   }, [
     fetchedClients,
@@ -251,24 +225,54 @@ export const SummaryFilterPanel = ({
     }));
   };
 
-  const renderSectionContent = (category: FilterCategory) => {
-    let itemsToRender: DataItem[] | ClientForm[] = [];
+  const renderSectionContent = (category: ContextSection) => {
+    let itemsToRender: (ClientContext | ClientNote)[] = [];
     let isLoading = false;
 
     if (category.id === "clients") {
-      itemsToRender = fetchedClients;
+      itemsToRender = fetchedClients.map((client) => ({
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        updatedAt: undefined,
+      }));
       isLoading = isClientsLoading;
     } else if (category.id === "forms") {
-      itemsToRender = fetchedForms;
-      isLoading = isFormsLoading;
+      //console.log("Fetched Notes for Forms:", fetchedNotes);
+      itemsToRender = fetchedNotes.filter(
+        (note) => note.noteType === ClientNoteType.ClientForm
+      );
+      isLoading = isNotesLoading;
+    } else if (category.id === "notes") {
+      const noteTypesForNotesSection: ClientNoteType[] = [
+        ClientNoteType.AINote,
+        ClientNoteType.TrainerNote,
+        ClientNoteType.ClientNote,
+      ];
+      itemsToRender = fetchedNotes.filter((note) =>
+        noteTypesForNotesSection.includes(note.noteType)
+      );
+      isLoading = isNotesLoading;
+    } else if (category.id === "email") {
+      itemsToRender = fetchedNotes.filter(
+        (note) => note.noteType === ClientNoteType.ClientEmail
+      );
+      isLoading = isNotesLoading;
+    } else if (category.id === "fitness-tracker") {
+      itemsToRender = fetchedNotes.filter(
+        (note) => note.noteType === ClientNoteType.FitnessTrackerEntry
+      );
+      isLoading = isNotesLoading;
+    } else if (category.id === "habits") {
+      itemsToRender = fetchedNotes.filter(
+        (note) => note.noteType === ClientNoteType.HabitEntry
+      );
+      isLoading = isNotesLoading;
     } else {
       itemsToRender = category.data || [];
     }
 
-    const selectedId =
-      category.id === "clients"
-        ? selectedClient?.id
-        : selectedItems[category.id];
+    const selectedId = selectedItems[category.id];
 
     if (isLoading) {
       return (
@@ -280,8 +284,7 @@ export const SummaryFilterPanel = ({
 
     return (
       <div className="max-h-48 overflow-y-auto">
-        {/* Add New item */}
-        {category.id !== "clients" && (
+        {category.showAddNew && (
           <div
             onClick={() => console.log("Add new for", category.id)}
             className="flex items-center cursor-pointer p-1 rounded hover:bg-accent"
@@ -291,8 +294,7 @@ export const SummaryFilterPanel = ({
           </div>
         )}
 
-        {/* Data items */}
-        {itemsToRender && itemsToRender.length > 0 ? (
+        {itemsToRender.length > 0 ? (
           itemsToRender.map((item) => (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
@@ -303,12 +305,12 @@ export const SummaryFilterPanel = ({
                         (client) => client.id === item.id
                       );
                       onClientSelect(selectedClientData);
-                      handleItemSelect(category.id, item.id); // Update local state for highlighting
-                      setManuallySelectedClientId(item.id); // Mark as manual selection
+                      handleItemSelect(category.id, item.id);
+                      setManuallySelectedClientId(item.id);
                     } else {
                       handleItemSelect(category.id, item.id);
-                      if (category.id === "forms" && isClientForm(item)) {
-                        addBadge(item.formUniqueName);
+                      if (category.id === "forms") {
+                        addBadge("FIX ME: Form Badge");
                       }
                     }
                   }}
@@ -316,21 +318,20 @@ export const SummaryFilterPanel = ({
                     selectedId === item.id ? "bg-accent" : ""
                   }`}
                 >
-                  {/* Display formUniqueName for forms, otherwise name */}
-                  {isClientForm(item)
-                    ? `${item.formUniqueName} (${formatDate(item.updatedAt)})`
-                    : category.id === "clients"
-                    ? `${item.name} (${(item as ClientForTrainer).email})`
-                    : item.name}
+                  {isClientContext(item)
+                    ? `${item.name} (${item.email})`
+                    : isClientNote(item)
+                    ? getClientNoteDisplayName(item)
+                    : "Unknown"}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  {isClientForm(item)
-                    ? item.formUniqueName
-                    : category.id === "clients"
-                    ? `${item.name} (${(item as ClientForTrainer).email})`
-                    : item.name}
+                  {isClientContext(item)
+                    ? item.name
+                    : isClientNote(item)
+                    ? getClientNoteDisplayName(item)
+                    : "Unknown"}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -358,7 +359,7 @@ export const SummaryFilterPanel = ({
               <h3 className="font-medium text-sm">Filter by Program</h3>
             </div>
             <Combobox
-              options={dummyPrograms}
+              options={[]}
               value={selectedProgram}
               onValueChange={setSelectedProgram}
               placeholder="Select a program..."
@@ -367,7 +368,6 @@ export const SummaryFilterPanel = ({
           </div>
         )}
 
-        {/* Search Section */}
         <div className="py-1">
           {isDesktop && (
             <div className="flex items-center gap-2 mb-2">
@@ -383,11 +383,11 @@ export const SummaryFilterPanel = ({
             onChange={(e) => {
               setSearchText(e.target.value);
               clearClientSelection();
+              handleItemSelect("clients", null);
             }}
           />
         </div>
 
-        {/* Collapsible Sections */}
         {filterCategories.map((category) => {
           const isOpen = openSections.includes(category.id);
           const Icon = category.icon;
