@@ -40,7 +40,7 @@ export function AIChat() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] w-full bg-background border rounded-lg shadow-lg">
+    <div className="flex flex-col h-full w-full bg-background border rounded-lg shadow-lg">
       <ScrollArea className="flex-grow p-4">
         <div className="flex flex-col gap-4">
           {messages.map((message) => (

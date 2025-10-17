@@ -43,7 +43,7 @@ export function AdaptiveFilterLayout({
           className="flex-1"
         >
           <ResizablePanel defaultSize={75} minSize={50}>
-            <ScrollArea className="h-full p-4">{MainContent}</ScrollArea>
+            <div className="h-full p-4">{MainContent}</div>
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={25} minSize={15} maxSize={50}>
@@ -74,7 +74,7 @@ export function AdaptiveFilterLayout({
           </SheetContent>
         </Sheet>
       </div>
-      <ScrollArea className="flex-1 p-4">{MainContent}</ScrollArea>
+      <div className="flex-1 p-4">{MainContent}</div>
     </div>
   );
 }

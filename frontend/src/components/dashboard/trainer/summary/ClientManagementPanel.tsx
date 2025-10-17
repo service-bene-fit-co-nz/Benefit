@@ -63,7 +63,7 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
   const promptOptions = prompts.map((p) => ({ label: p.title, value: p.id }));
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       {selectedClient ? (
         <div className="flex items-center space-x-4 p-4 bg-muted rounded-lg mb-4">
           <Avatar className="h-16 w-16">
@@ -121,7 +121,7 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
         </div>
       )}
       {selectedClient && (
-        <div className="mt-4">
+        <div className="flex-grow">
           <AIChat />
         </div>
       )}

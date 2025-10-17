@@ -33,7 +33,7 @@ export default function SummaryPage() {
   };
 
   return (
-    <div className="h-screen">
+    <div className="h-full">
       <AdaptiveFilterLayout
         Header={<ClientManagementHeader />}
         MainContent={<ClientManagementPanel contextBadges={contextBadges} selectedClient={selectedClient} />}
