@@ -1,42 +1,52 @@
-"use client";
+'use client';
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { agentQuery } from "@/utils/ai/agent/chatAgent";
+import { AIConversation } from "@/utils/ai/agent/agentTypes";
 
 interface Message {
-  id: string;
-  text: string;
-  sender: "user" | "ai";
+  id: string | number;
+  content: string;
+  type: "user" | "ai" | "error";
 }
 
 export function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: input,
-      sender: "user",
+      content: input,
+      type: "user",
     };
 
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput("");
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `This is an AI response to "${input}"`,
-        sender: "ai",
-      };
-      setMessages((prevMessages) => [...prevMessages, aiMessage]);
-    }, 1000);
+    const request: AIConversation = {
+      toolList: [],
+      model: "Gemini", // Or make this selectable
+      prompt: "You are a helpful assistant.",
+      conversation: newMessages,
+    };
+
+    const aiResponse = await agentQuery(request);
+
+    const aiMessage: Message = {
+      id: aiResponse.id,
+      content: aiResponse.content,
+      type: aiResponse.type,
+    };
+
+    setMessages((prevMessages) => [...prevMessages, aiMessage]);
   };
 
   return (
@@ -48,18 +58,18 @@ export function AIChat() {
               key={message.id}
               className={cn(
                 "flex items-end gap-2",
-                message.sender === "user" ? "justify-end" : "justify-start"
+                message.type === "user" ? "justify-end" : "justify-start"
               )}
             >
               <div
                 className={cn(
                   "p-3 rounded-lg max-w-xs lg:max-w-md",
-                  message.sender === "user"
+                  message.type === "user"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
                 )}
               >
-                <p className="text-sm">{message.text}</p>
+                <p className="text-sm">{message.content}</p>
               </div>
             </div>
           ))}
