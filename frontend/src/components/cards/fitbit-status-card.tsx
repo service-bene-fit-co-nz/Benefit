@@ -8,15 +8,20 @@ import { getFitbitConnectionStatus } from "@/server-actions/fitbit/actions";
 import { initiateFitbitOAuth } from "@/server-actions/client/integrations/fitbit";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export const FitbitStatusCard = () => {
+  const { data: session } = useSession();
+  const clientId = session?.user?.id; // Assuming session.user.id is the clientId
+
   const {
     data: fitbitStatus,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["fitbitConnectionStatus"],
+    queryKey: ["fitbitConnectionStatus", clientId],
     queryFn: getFitbitConnectionStatus,
+    enabled: !!clientId, // Only run query if clientId is available
   });
 
   const router = useRouter(); // Initialize router

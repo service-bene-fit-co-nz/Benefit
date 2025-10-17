@@ -69,9 +69,9 @@ export async function fetchClientNotes(
 
 export async function createClientNote(
   clientId: string,
-  noteContent: string,
   noteType: ClientNoteType,
-  noteMetadata: Prisma.InputJsonValue
+  noteMetadata: Prisma.InputJsonValue,
+  formData: Prisma.InputJsonValue
 ): Promise<ClientNote> {
   const session = await getServerSession(authOptions);
 
@@ -80,15 +80,15 @@ export async function createClientNote(
     !session.user ||
     !session.user.roles ||
     !session.user.roles.some((role) =>
-      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
-        role
-      )
+      (
+        [UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]
+      ).includes(role)
     )
   ) {
     throw new Error("Unauthorized");
   }
 
-  if (!clientId || !noteContent || !noteType) {
+  if (!clientId || !noteMetadata || !formData || !noteType) {
     throw new Error("Client ID, note content, and note type are required.");
   }
 
@@ -96,15 +96,18 @@ export async function createClientNote(
     const newNote = await prisma.clientNote.create({
       data: {
         clientId: clientId,
-        formData: { content: noteContent }, // Assuming formData stores the content
-        noteMetadata: noteMetadata,
         noteType: noteType,
-        formId: "manual-note-" + Date.now(), // A dummy formId for manual notes
+        noteMetadata: noteMetadata,
+        formData: formData,
+        formId: "manual-note-" + Date.now(),
       },
     });
     return newNote;
   } catch (error) {
-    console.error(`Error creating client note for client ID ${clientId}:`, error);
+    console.error(
+      `Error creating client note for client ID ${clientId}:`,
+      error
+    );
     throw new Error("Failed to create client note.");
   }
 }
@@ -117,9 +120,9 @@ export async function deleteClientNote(noteId: string): Promise<void> {
     !session.user ||
     !session.user.roles ||
     !session.user.roles.some((role) =>
-      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
-        role
-      )
+      (
+        [UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]
+      ).includes(role)
     )
   ) {
     throw new Error("Unauthorized");

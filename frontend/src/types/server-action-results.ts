@@ -7,4 +7,4 @@ export type ActionError = {
   details?: Record<string, any>; // Optional: for validation errors, etc.
 };
 
-export type ActionResult<T> = { success: true; data: T } | ActionError;
+export type ActionResult<T> = { success: true; data: T; message?: string } | ActionError;

@@ -21,7 +21,12 @@ import {
   fetchClientsForTrainer,
   ClientForTrainer,
 } from "@/server-actions/trainer/clients/actions";
-import { fetchClientNotes, ClientNote, createClientNote, deleteClientNote } from "@/server-actions/client/notes/actions";
+import {
+  fetchClientNotes,
+  ClientNote,
+  createClientNote,
+  deleteClientNote,
+} from "@/server-actions/client/notes/actions";
 import { toast } from "sonner";
 import {
   TooltipProvider,
@@ -30,8 +35,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate_DD_Mmm_YYYY } from "@/utils/date-utils";
-import { ClientNoteType } from "@prisma/client";
+import { format } from "date-fns";
+import { ClientNoteType, Prisma } from "@prisma/client";
 import { AddNoteForm, NoteFormValues } from "./AddNoteForm";
+import {
+  AddFitnessTrackerForm,
+  AddFitnessTrackerFormValues,
+} from "./AddFitnessTrackerForm";
 import {
   Dialog,
   DialogContent,
@@ -65,17 +75,29 @@ const getClientNoteDisplayName = (note: ClientNote): string => {
     case "ClientNote":
       const author = metadata?.author || "Note";
       const noteTypeString = note.noteType.replace("Note", "");
-      return `${author} (${noteTypeString}, ${formattedDate})`
+      return `${author} (${noteTypeString}, ${formattedDate})`;
     case "ClientEmail":
       return metadata?.subject || "Email";
     case "FitnessTrackerEntry":
-      return metadata?.activity || "Fitness Entry";
+      const type = metadata?.type || "Tracker";
+      const startDate = metadata?.startDate ? format(new Date(metadata.startDate), "dd/MM") : "Undef";
+      const endDate = metadata?.endDate ? format(new Date(metadata.endDate), "dd/MM") : "Undef";
+      return `${type} (${startDate} - ${endDate})`;
     case "HabitEntry":
       return metadata?.habit || "Habit Entry";
     default:
       return "Entry";
   }
 };
+
+function isClientSetting(value: Prisma.JsonValue): value is ClientSetting {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "type" in value &&
+    typeof (value as any).type === "string"
+  );
+}
 
 // --- Data Structures and Dummy Data ---
 interface ProgramItem {
@@ -96,6 +118,11 @@ interface ContextSection {
   icon: React.ElementType;
   data?: ClientContext[] | ClientNote[];
   showAddNew: boolean;
+}
+
+interface ClientSetting {
+  type: string;
+  [key: string]: Prisma.JsonValue; // Add index signature
 }
 
 const filterCategories: ContextSection[] = [
@@ -152,6 +179,8 @@ export const SummaryFilterPanel = ({
     string | null
   >(null);
   const [isAddNoteFormOpen, setIsAddNoteFormOpen] = useState(false);
+  const [isAddFitnessTrackerFormOpen, setIsAddFitnessTrackerFormOpen] =
+    useState(false);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const queryClient = useQueryClient();
 
@@ -212,16 +241,19 @@ export const SummaryFilterPanel = ({
     try {
       await createClientNote(
         selectedClientId,
-        values.note,
         values.noteType,
-        { author: authorName, title: values.note.substring(0, 50) + "..." } // Use first 50 chars as title
+        { author: authorName, title: values.note.substring(0, 50) + "..." }, // noteMetadata
+        { content: values.note } // formData
       );
       toast.success("Note added successfully!");
       setIsAddNoteFormOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["clientNotes", selectedClientId] });
+      queryClient.invalidateQueries({
+        queryKey: ["clientNotes", selectedClientId],
+      });
     } catch (error) {
       toast.error("Failed to add note", {
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred.",
       });
     }
   };
@@ -234,12 +266,25 @@ export const SummaryFilterPanel = ({
     try {
       await deleteClientNote(noteId);
       toast.success("Note deleted successfully!");
-      queryClient.invalidateQueries({ queryKey: ["clientNotes", selectedClientId] });
+      queryClient.invalidateQueries({
+        queryKey: ["clientNotes", selectedClientId],
+      });
     } catch (error) {
       toast.error("Failed to delete note", {
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred.",
       });
     }
+  };
+
+  const onAddFitnessTrackerCancel = () => {
+    setIsAddFitnessTrackerFormOpen(false);
+  };
+
+  const onFitnessTrackerRecordAdded = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["clientNotes", selectedClientId],
+    });
   };
 
   // ------------------------------ Effects and Handlers ------------------------------
@@ -356,33 +401,70 @@ export const SummaryFilterPanel = ({
 
     return (
       <div className="max-h-48 overflow-y-auto">
-        {category.showAddNew && category.id === "notes" && !!selectedClientId && (
-          <Dialog open={isAddNoteFormOpen} onOpenChange={setIsAddNoteFormOpen}>
-            <DialogTrigger asChild>
-              <div
-                className="flex items-center cursor-pointer p-1 rounded hover:bg-accent"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New
-              </div>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add New Note</DialogTitle>
-                <DialogDescription>
-                  Add a new note for the selected client.
-                </DialogDescription>
-              </DialogHeader>
-              <AddNoteForm
-                onSubmit={onAddNoteSubmit}
-                onCancel={onAddNoteCancel}
-                isSubmitting={false} // You might want to manage this state
-                selectedClientName={selectedClientName}
-                loggedInUserName={loggedInUserName}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
+        {category.showAddNew &&
+          category.id === "notes" &&
+          !!selectedClientId && (
+            <Dialog
+              open={isAddNoteFormOpen}
+              onOpenChange={setIsAddNoteFormOpen}
+            >
+              <DialogTrigger asChild>
+                <div className="flex items-center cursor-pointer p-1 rounded hover:bg-accent">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Add New Note</DialogTitle>
+                  <DialogDescription>
+                    Add a new note for the selected client.
+                  </DialogDescription>
+                </DialogHeader>
+                <AddNoteForm
+                  onSubmit={onAddNoteSubmit}
+                  onCancel={onAddNoteCancel}
+                  isSubmitting={false} // You might want to manage this state
+                  selectedClientName={selectedClientName}
+                  loggedInUserName={loggedInUserName}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+
+        {category.showAddNew &&
+          category.id === "fitness-tracker" &&
+          !!selectedClientId &&
+          Array.isArray(selectedClientData?.settings) &&
+          selectedClientData?.settings?.some(
+            (setting) => isClientSetting(setting) && setting.type === "Fitbit"
+          ) && (
+            <Dialog
+              open={isAddFitnessTrackerFormOpen}
+              onOpenChange={setIsAddFitnessTrackerFormOpen}
+            >
+              <DialogTrigger asChild>
+                <div className="flex items-center cursor-pointer p-1 rounded hover:bg-accent">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[850px]">
+                <DialogHeader>
+                  <DialogTitle>Add New Fitness Data</DialogTitle>
+                  <DialogDescription>
+                    Add new fitness tracker data for the selected client.
+                  </DialogDescription>
+                </DialogHeader>
+                <AddFitnessTrackerForm
+                  onCancel={onAddFitnessTrackerCancel}
+                  isSubmitting={false} // Manage this state as needed
+                  clientId={selectedClientId || ""} // Pass selectedClientId
+                  onRecordAdded={onFitnessTrackerRecordAdded}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
 
         {itemsToRender.length > 0 ? (
           itemsToRender.map((item) => (
@@ -408,23 +490,25 @@ export const SummaryFilterPanel = ({
                     selectedId === item.id ? "bg-accent" : ""
                   }`}
                 >
-                  {isClientContext(item)
-                    ? `${item.name} (${item.email})`
-                    : isClientNote(item)
-                    ? (
-                        <div className="flex justify-between items-center">
-                          <span>{getClientNoteDisplayName(item)}</span>
-                          {category.id === "notes" && (
-                            <span onClick={(e) => {
-                              e.stopPropagation(); // Prevent selecting the item
-                              onDeleteNote(item.id);
-                            }}>
-                              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                            </span>
-                          )}
-                        </div>
-                      )
-                    : "Unknown"}
+                  {isClientContext(item) ? (
+                    `${item.name} (${item.email})`
+                  ) : isClientNote(item) ? (
+                    <div className="flex justify-between items-center">
+                      <span>{getClientNoteDisplayName(item)}</span>
+                      {(category.id === "notes" || category.id === "fitness-tracker") && (
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent selecting the item
+                            onDeleteNote(item.id); // Use existing onDeleteNote for now
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    "Unknown"
+                  )}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -440,7 +524,9 @@ export const SummaryFilterPanel = ({
           ))
         ) : (
           <div className="p-1 text-muted-foreground">
-            No {category.title.toLowerCase()} found.
+            {category.id === "fitness-tracker"
+              ? "No fitness tracker records found."
+              : `No ${category.title.toLowerCase()} found.`}
           </div>
         )}
       </div>

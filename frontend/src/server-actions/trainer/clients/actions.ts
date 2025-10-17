@@ -3,7 +3,7 @@
 import prisma from "@/utils/prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { UserRole } from "@prisma/client";
+import { UserRole, Prisma } from "@prisma/client";
 
 export interface ClientForTrainer {
   id: string;
@@ -13,6 +13,7 @@ export interface ClientForTrainer {
   dateOfBirth?: string;
   avatarUrl?: string;
   gender?: string;
+  settings?: Prisma.JsonValue;
 }
 
 export async function fetchClientsForTrainer(
@@ -82,6 +83,7 @@ export async function fetchClientsForTrainer(
         contactInfo: true,
         authId: true,
         gender: true,
+        settings: true,
       },
       orderBy: {
         firstName: "asc",
@@ -124,6 +126,7 @@ export async function fetchClientsForTrainer(
             dateOfBirth: client.birthDate?.toISOString().split('T')[0],
             avatarUrl: client.avatarUrl || undefined,
             gender: client.gender || undefined,
+            settings: client.settings || undefined,
         };
     }));
 
