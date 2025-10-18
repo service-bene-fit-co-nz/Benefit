@@ -1,26 +1,37 @@
-// src/utils/ai/agent/agentTypes.ts
+import { DynamicTool } from "@langchain/core/tools";
+import { ToolType } from "../toolManager/toolManager";
+
 export type LLMType = "Gemini" | "ChatGPT" | "Groq";
 
-export interface AIConversation {
-  toolList: string[];
-  model: LLMType;
-  prompt: string;
-  conversation: {
-    id: string | number;
-    type: "user" | "ai" | "error";
-    content: string;
-  }[];
-}
-
-export interface AIContent {
+export type AIContent = {
   id: string | number;
   content: string;
-  type: "ai" | "error";
-}
+  type: "user" | "ai" | "error";
+};
+
+export type AITool = {
+  name: string;
+  prompt: string;
+  tool: DynamicTool<string>;
+};
+
+export type AIConversation = {
+  model: LLMType;
+  prompt: string;
+  toolList: ToolType[];
+  conversation: AIContent[];
+};
+
+export type AIRequest = {
+  prompt: string;
+  tools: AITool[];
+  conversation: AIContent[];
+};
 
 export class AIError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "AIError";
+    Object.setPrototypeOf(this, AIError.prototype);
   }
 }
