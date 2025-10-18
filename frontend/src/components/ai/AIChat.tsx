@@ -1,91 +1,82 @@
+/**
+ * Copyright 2023 Vercel, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use client';
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { agentQuery } from "@/utils/ai/agent/chatAgent";
-import { AIConversation } from "@/utils/ai/agent/agentTypes";
 
-interface Message {
-  id: string | number;
-  content: string;
-  type: "user" | "ai" | "error";
-}
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ArrowDownIcon } from 'lucide-react';
+import type { ComponentProps } from 'react';
+import { useCallback } from 'react';
+import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom';
 
-export function AIChat() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
+export const Conversation = ({ className, ...props }: ConversationProps) => (
+  <StickToBottom
+    className={cn(
+      'relative h-full w-full overflow-hidden rounded-md border bg-background',
+      className
+    )}
+    {...props}
+  />
+);
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      type: "user",
-    };
+export type ConversationContentProps = ComponentProps<
+  typeof StickToBottom.Content
+>;
 
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput("");
+export const ConversationContent = ({
+  className,
+  ...props
+}: ConversationContentProps) => (
+  <StickToBottom.Content
+    className={cn('h-full w-full overflow-y-auto p-4',
+      className
+    )}
+    {...props}
+  />
+);
 
-    const request: AIConversation = {
-      toolList: [],
-      model: "Gemini", // Or make this selectable
-      prompt: "You are a helpful assistant.",
-      conversation: newMessages,
-    };
+export type ConversationScrollButtonProps = ComponentProps<typeof Button>;
 
-    const aiResponse = await agentQuery(request);
+export const ConversationScrollButton = ({
+  className,
+  ...props
+}: ConversationScrollButtonProps) => {
+  const { isAtBottom, scrollToBottom } = useStickToBottomContext();
 
-    const aiMessage: Message = {
-      id: aiResponse.id,
-      content: aiResponse.content,
-      type: aiResponse.type,
-    };
-
-    setMessages((prevMessages) => [...prevMessages, aiMessage]);
-  };
+  const handleScrollToBottom = useCallback(() => {
+    scrollToBottom();
+  }, [scrollToBottom]);
 
   return (
-    <div className="flex flex-col h-full w-full bg-background border rounded-lg shadow-lg">
-      <ScrollArea className="flex-grow p-4">
-        <div className="flex flex-col gap-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "flex items-end gap-2",
-                message.type === "user" ? "justify-end" : "justify-start"
-              )}
-            >
-              <div
-                className={cn(
-                  "p-3 rounded-lg max-w-xs lg:max-w-md",
-                  message.type === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                )}
-              >
-                <p className="text-sm">{message.content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-      <div className="p-4 border-t">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-grow"
-          />
-          <Button type="submit">Send</Button>
-        </form>
-      </div>
-    </div>
+    !isAtBottom && (
+      <Button
+        className={cn(
+          'absolute bottom-4 left-1/2 -translate-x-1/2 transform rounded-full',
+          className
+        )}
+        variant="outline"
+        size="icon"
+        onClick={handleScrollToBottom}
+        {...props}
+      >
+        <ArrowDownIcon />
+      </Button>
+    )
   );
-}
+};

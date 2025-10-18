@@ -7,7 +7,7 @@ import {
   fetchPrompts as serverFetchPrompts,
   PromptData,
 } from "@/server-actions/admin/prompts/actions";
-import { AIChat } from "@/components/ai/AIChat";
+import { AIChatWrapper } from "@/components/ai/AIChatWrapper";
 
 interface ClientForTrainer {
   id: string;
@@ -122,7 +122,7 @@ export const ClientManagementPanel: React.FC<ClientManagementPanelProps> = ({
       )}
       {selectedClient && (
         <div className="flex-grow">
-          <AIChat />
+          <AIChatWrapper />
         </div>
       )}
     </div>
