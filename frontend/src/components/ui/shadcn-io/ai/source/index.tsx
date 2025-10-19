@@ -1,32 +1,80 @@
-import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
-
-export const Source = ({ href, title, className }: { href: string; title: string; className?: string }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" className={cn("text-blue-500 underline", className)}>{title}</a>
+/**
+ * Copyright 2023 Vercel, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+"use client";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
+import { BookIcon, ChevronDownIcon } from "lucide-react";
+import type { ComponentProps, ComponentPropsWithoutRef } from "react";
+export type SourcesProps = ComponentPropsWithoutRef<"div">;
+export const Sources = ({ className, ...props }: SourcesProps) => (
+  <Collapsible
+    className={cn("not-prose mb-4 text-primary text-xs", className)}
+    {...props}
+  />
 );
-
-export const Sources = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className={cn("border p-2 rounded-md", className)}>
-      {React.Children.map(children, child => {
-        if (React.isValidElement(child) && child.type === SourcesTrigger) {
-          return React.cloneElement(child as React.ReactElement<any>, { onClick: () => setIsOpen(!isOpen), isOpen });
-        }
-        if (React.isValidElement(child) && child.type === SourcesContent) {
-          return isOpen ? child : null;
-        }
-        return child;
-      })}
-    </div>
-  );
+export type SourcesTriggerProps = ComponentProps<typeof CollapsibleTrigger> & {
+  count: number;
 };
-
-export const SourcesContent = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={cn("mt-2 text-sm text-muted-foreground", className)}>{children}</div>
+export const SourcesTrigger = ({
+  className,
+  count,
+  children,
+  ...props
+}: SourcesTriggerProps) => (
+  <CollapsibleTrigger className="flex items-center gap-2" {...props}>
+    {children ?? (
+      <>
+        <p className="font-medium">Used {count} sources</p>
+        <ChevronDownIcon className="h-4 w-4" />
+      </>
+    )}
+  </CollapsibleTrigger>
 );
-
-export const SourcesTrigger = ({ count, onClick, isOpen, children, className }: { count: number; onClick?: () => void; isOpen?: boolean; children?: React.ReactNode; className?: string }) => (
-  <button type="button" onClick={onClick} className={cn("text-blue-500 hover:underline", className)}>{children || (isOpen ? 'Hide ' : 'Show ' )}{count} Sources</button>
+export type SourcesContentProps = ComponentProps<typeof CollapsibleContent>;
+export const SourcesContent = ({
+  className,
+  ...props
+}: SourcesContentProps) => (
+  <CollapsibleContent
+    className={cn(
+      "mt-3 flex w-fit flex-col gap-2",
+      "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
+      className
+    )}
+    {...props}
+  />
+);
+export type SourceProps = ComponentProps<"a">;
+export const Source = ({ href, title, children, ...props }: SourceProps) => (
+  <a
+    className="flex items-center gap-2"
+    href={href}
+    rel="noreferrer"
+    target="_blank"
+    {...props}
+  >
+    {children ?? (
+      <>
+        <BookIcon className="h-4 w-4" />
+        <span className="block font-medium">{title}</span>
+      </>
+    )}
+  </a>
 );

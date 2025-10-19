@@ -41,7 +41,11 @@ import { nanoid } from "nanoid";
 import { type FormEventHandler, useCallback, useEffect, useState } from "react";
 
 import { agentQuery } from "@/utils/ai/agent/chatAgent";
-import { AIConversation, AIContent, LLMType } from "@/utils/ai/agent/agentTypes";
+import {
+  AIConversation,
+  AIContent,
+  LLMType,
+} from "@/utils/ai/agent/agentTypes";
 
 type ChatMessage = {
   id: string;
@@ -59,19 +63,7 @@ const models: { id: LLMType; name: string }[] = [
   { id: "Groq", name: "Groq" },
 ];
 
-const initialMessages: ChatMessage[] = [
-  {
-    id: nanoid(),
-    content:
-      "Hello! I'm your AI assistant. I can help you with coding questions, explain concepts, and provide guidance on web development topics. What would you like to know?",
-    role: "assistant",
-    timestamp: new Date(),
-    sources: [
-      { title: "Getting Started Guide", url: "#" },
-      { title: "API Documentation", url: "#" },
-    ],
-  },
-];
+const initialMessages: ChatMessage[] = [];
 
 export function AIChatConversation() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -79,50 +71,63 @@ export function AIChatConversation() {
   const [selectedModel, setSelectedModel] = useState<LLMType>(models[0].id);
   const [isTyping, setIsTyping] = useState(false);
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(async (event) => {
-    event.preventDefault();
-    
-    if (!inputValue.trim() || isTyping) return;
+  const handleSubmit: FormEventHandler<HTMLFormElement> = useCallback(
+    async (event) => {
+      event.preventDefault();
 
-    const userMessage: ChatMessage = {
-      id: nanoid(),
-      content: inputValue.trim(),
-      role: "user",
-      timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue("");
-    setIsTyping(true);
+      if (!inputValue.trim() || isTyping) return;
 
-    try {
-      const conversationRequest: AIConversation = {
-        model: selectedModel,
-        prompt: "You are a helpful assistant.", // This can be made dynamic
-        toolList: [], // This can be made dynamic
-        conversation: messages.map(msg => ({ id: msg.id, content: msg.content, type: msg.role === 'user' ? 'user' : 'ai' })),
-      };
-
-      const aiResponse = await agentQuery(conversationRequest);
-
-      const assistantMessage: ChatMessage = {
+      const userMessage: ChatMessage = {
         id: nanoid(),
-        content: aiResponse.content,
-        role: 'assistant',
+        content: inputValue.trim(),
+        role: "user",
         timestamp: new Date(),
-        isStreaming: false, // Assuming agentQuery returns full content, not streaming
       };
-      setMessages(prev => [...prev, assistantMessage]);
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages); // Update state with the new array
+      setInputValue("");
+      setIsTyping(true);
 
-    } catch (error: any) {
-      console.error("Error calling agentQuery:", error);
-      setMessages(prev => [
-        ...prev,
-        { id: nanoid(), content: `Error: ${error.message}`, role: 'assistant', timestamp: new Date(), isStreaming: false },
-      ]);
-    } finally {
-      setIsTyping(false);
-    }
-  }, [inputValue, isTyping, messages, selectedModel]);
+      try {
+        const conversationRequest: AIConversation = {
+          model: selectedModel,
+          prompt: "You are a helpful assistant.", // This can be made dynamic
+          toolList: [], // This can be made dynamic
+          conversation: updatedMessages.map((msg) => ({
+            id: msg.id,
+            content: msg.content,
+            type: msg.role === "user" ? "user" : "ai",
+          })),
+        };
+
+        const aiResponse = await agentQuery(conversationRequest);
+
+        const assistantMessage: ChatMessage = {
+          id: nanoid(),
+          content: aiResponse.content,
+          role: "assistant",
+          timestamp: new Date(),
+          isStreaming: false, // Assuming agentQuery returns full content, not streaming
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } catch (error: any) {
+        console.error("Error calling agentQuery:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nanoid(),
+            content: `Error: ${error.message}`,
+            role: "assistant",
+            timestamp: new Date(),
+            isStreaming: false,
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [inputValue, isTyping, messages, selectedModel]
+  );
 
   const handleReset = useCallback(() => {
     setMessages(initialMessages);
@@ -131,7 +136,7 @@ export function AIChatConversation() {
   }, []);
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden rounded-xl border bg-background shadow-sm">
+    <>
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-3">
         <div className="flex items-center gap-3">
@@ -154,13 +159,14 @@ export function AIChatConversation() {
           <span className="ml-1">Reset</span>
         </Button>
       </div>
+
       {/* Conversation Area */}
       <Conversation className="flex-1">
         <ConversationContent className="space-y-4">
           {messages.map((message) => (
             <div key={message.id} className="space-y-3">
               <Message from={message.role}>
-                <MessageContent from={message.role}>
+                <MessageContent>
                   {message.isStreaming && message.content === "" ? (
                     <div className="flex items-center gap-2">
                       <Loader size={14} />
@@ -215,13 +221,14 @@ export function AIChatConversation() {
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
+
       {/* Input Area */}
       <div className="border-t p-4">
         <PromptInput onSubmit={handleSubmit}>
           <PromptInputTextarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask me anything about development, coding, or technology..."
+            placeholder="Ask me anything lets talk fitness..."
             disabled={isTyping}
           />
           <PromptInputToolbar>
@@ -257,6 +264,6 @@ export function AIChatConversation() {
           </PromptInputToolbar>
         </PromptInput>
       </div>
-    </div>
+    </>
   );
 }

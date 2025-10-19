@@ -41,11 +41,13 @@ export default function RootLayout({
             <Separator orientation="vertical" className="h-4" /> <HomeButton />
           </div>
         </header>
-        <main className="flex-1 flex flex-col">
-          <Suspense fallback={<Skeleton className="h-full w-full" />}> {/* Wrap children with Suspense */}
+        <div className="h-screen flex flex-col">
+          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+            {" "}
+            {/* Wrap children with Suspense */}
             {children}
           </Suspense>
-        </main>
+        </div>
         <Toaster richColors />
       </SidebarInset>
     </SidebarProvider>
