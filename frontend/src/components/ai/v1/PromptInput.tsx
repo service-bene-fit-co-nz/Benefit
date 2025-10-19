@@ -69,7 +69,7 @@ export const PromptInputTextarea = ({
 
       // Submit on Enter (without Shift)
       e.preventDefault();
-      const form = e.currentTarget.form;
+      const form = (e.currentTarget as HTMLTextAreaElement).form;
       if (form) {
         form.requestSubmit();
       }

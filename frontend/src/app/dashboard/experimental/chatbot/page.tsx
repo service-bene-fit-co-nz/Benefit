@@ -1,4 +1,4 @@
-import AIChat from "@/components/ai/ai-chat";
+import AIChat from "@/components/ai/v1/ai-chat";
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { UserRole } from "@prisma/client";

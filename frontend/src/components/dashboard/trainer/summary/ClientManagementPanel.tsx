@@ -7,7 +7,7 @@ import {
   fetchPrompts as serverFetchPrompts,
   PromptData,
 } from "@/server-actions/admin/prompts/actions";
-import { AIChatWrapper } from "@/components/ai/AIChatWrapper";
+import { AIChatWrapper } from "@/components/ai/v1/AIChatWrapper";
 
 interface ClientForTrainer {
   id: string;

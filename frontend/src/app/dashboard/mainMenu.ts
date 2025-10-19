@@ -45,6 +45,10 @@ const menuDefinition: NavData = {
       roles: ["SystemAdmin", "Admin"],
       items: [
         {
+          title: "AI",
+          url: "/dashboard/trainer/ai",
+        },
+        {
           title: "Clients",
           url: "/dashboard/trainer/clients",
         },
