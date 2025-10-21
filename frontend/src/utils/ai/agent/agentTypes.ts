@@ -3,11 +3,11 @@ import { ToolType } from "../toolManager/toolManager";
 
 export type LLMType = "Gemini" | "ChatGPT" | "Groq";
 
-export type AIContent = {
-  id: string | number;
+export interface AIContent {
+  id: string;
   content: string;
   type: "user" | "ai" | "error";
-};
+}
 
 export type AITool = {
   name: string;

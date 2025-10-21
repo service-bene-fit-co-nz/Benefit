@@ -49,17 +49,21 @@ const menuDefinition: NavData = {
           url: "/dashboard/trainer/ai",
         },
         {
+          title: "Check In",
+          url: "/dashboard/trainer/checkin",
+        },
+        {
           title: "Clients",
           url: "/dashboard/trainer/clients",
         },
-        {
-          title: "Summary",
-          url: "/dashboard/trainer/summary",
-        },
-        {
-          title: "Summary old",
-          url: "/dashboard/trainer/summary-old",
-        },
+        // {
+        //   title: "Summary",
+        //   url: "/dashboard/trainer/summary",
+        // },
+        // {
+        //   title: "Summary old",
+        //   url: "/dashboard/trainer/summary-old",
+        // },
         {
           title: "Programmes",
           url: "/dashboard/trainer/programmes",

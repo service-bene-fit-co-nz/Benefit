@@ -66,7 +66,7 @@ export const agentQuery = async (
 
     if (serializedMessages.length) {
       return {
-        id: Date.now() + 1,
+        id: (Date.now() + 1).toString(),
         content:
           serializedMessages[serializedMessages.length - 1].content.toString(),
         type: "ai",
@@ -76,14 +76,15 @@ export const agentQuery = async (
   } catch (error: any) {
     if (error instanceof AIError) {
       return {
-        id: Date.now() + 1,
+        id: (Date.now() + 1).toString(),
         content: error.message,
         type: "error",
       };
     }
     return {
-      id: Date.now() + 1,
-      content: `An Error occurred: ${error.message}`,
+              id: (Date.now() + 1).toString(),
+            content: `An Error occurred: ${error.message}`,
+      
       type: "error",
     };
   }

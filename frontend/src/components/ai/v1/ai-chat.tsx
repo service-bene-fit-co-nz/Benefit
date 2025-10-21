@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { nanoid } from "nanoid";
 
 interface MessageDisplayProps {
   message: string;
@@ -54,7 +55,7 @@ const AIChat: React.FC = () => {
   const handleSendMessage = async () => {
     if (input.trim()) {
       const userRequest: AIContent = {
-        id: Date.now() + 1,
+        id: nanoid(),
         content: input,
         type: "user",
       };
@@ -76,7 +77,7 @@ const AIChat: React.FC = () => {
         setMessages((prevMessages) => [...prevMessages, aiResponse]);
       } catch (error) {
         const errorMessage: AIContent = {
-          id: Date.now() + 1,
+          id: nanoid(),
           content: "Error: Failed to get response from AI",
           type: "error",
         };

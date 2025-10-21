@@ -7,6 +7,7 @@ import {
   updateUser,
   deleteUser,
 } from "./tools/supabase/user";
+import { getClientDetails, getClientNotes } from "./tools/client/client";
 
 
 export type ToolType =
@@ -16,7 +17,9 @@ export type ToolType =
   | "supabase.user.read"
   | "supabase.user.update"
   | "supabase.user.delete"
-  | "utility.email.send";
+  | "utility.email.send"
+  | "client.details.get"
+  | "client.notes.get";
 
 // Define a recursive type for the nested tool map
 type NestedToolMap = {
@@ -40,6 +43,14 @@ const toolFunctionMap: NestedToolMap = {
       read: readUser,
       update: updateUser,
       delete: deleteUser,
+    },
+  },
+  client: {
+    details: {
+      get: getClientDetails,
+    },
+    notes: {
+      get: getClientNotes,
     },
   },
 };

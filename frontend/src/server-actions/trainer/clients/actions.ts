@@ -136,3 +136,90 @@ export async function fetchClientsForTrainer(
     throw new Error("Failed to fetch clients.");
   }
 }
+
+export async function fetchClientById(
+  clientId: string
+): Promise<ClientForTrainer | null> {
+  const session = await getServerSession(authOptions);
+
+  if (
+    !session ||
+    !session.user ||
+    !session.user.roles ||
+    !session.user.roles.some((role) =>
+      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
+        role
+      )
+    )
+  ) {
+    throw new Error("Unauthorized");
+  }
+
+  if (!clientId) {
+    return null;
+  }
+
+  try {
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        birthDate: true,
+        avatarUrl: true,
+        contactInfo: true,
+        authId: true,
+        gender: true,
+        settings: true,
+      },
+    });
+
+    if (!client) {
+      return null;
+    }
+
+    let userEmail = "N/A";
+    let phone: string | undefined;
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: client.authId },
+        select: { email: true },
+      });
+      userEmail = user?.email || "N/A";
+      if (Array.isArray(client.contactInfo)) {
+        const primaryPhone = client.contactInfo.find(
+          (info) => (info as any).type === "phone" && (info as any).primary === true
+        );
+        if (primaryPhone) {
+          phone = (primaryPhone as any).value;
+        }
+      } else if (typeof client.contactInfo === "object" && client.contactInfo !== null) {
+        if ((client.contactInfo as any).type === "phone" && (client.contactInfo as any).primary === true) {
+          phone = (client.contactInfo as any).value;
+        } else if ((client.contactInfo as any).phone) {
+          phone = (client.contactInfo as any).phone;
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching user/contact info for client ID ${client.id} (authId: ${client.authId}):`, error);
+      userEmail = "Error fetching email";
+    }
+
+    const fullName = [client.firstName, client.lastName].filter(Boolean).join(" ");
+
+    return {
+      id: client.id,
+      name: fullName,
+      email: userEmail,
+      phone: phone || undefined,
+      dateOfBirth: client.birthDate?.toISOString().split('T')[0],
+      avatarUrl: client.avatarUrl || undefined,
+      gender: client.gender || undefined,
+      settings: client.settings || undefined,
+    };
+  } catch (error) {
+    console.error(`Error fetching client by ID ${clientId}:`, error);
+    throw new Error("Failed to fetch client details.");
+  }
+}

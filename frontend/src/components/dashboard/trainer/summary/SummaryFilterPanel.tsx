@@ -153,14 +153,12 @@ const filterCategories: ContextSection[] = [
 ];
 
 interface SummaryFilterPanelProps {
-  addBadge: (badgeText: string) => void;
   onClientSelect: (client: ClientForTrainer | undefined) => void;
   clearClientSelection: () => void;
   selectedClient?: ClientForTrainer; // Add selectedClient to props
 }
 
 export const SummaryFilterPanel = ({
-  addBadge,
   onClientSelect,
   clearClientSelection,
   selectedClient,
@@ -481,9 +479,6 @@ export const SummaryFilterPanel = ({
                       setManuallySelectedClientId(item.id);
                     } else {
                       handleItemSelect(category.id, item.id);
-                      if (category.id === "forms") {
-                        addBadge("FIX ME: Form Badge");
-                      }
                     }
                   }}
                   className={`cursor-pointer p-1 rounded hover:bg-accent ${

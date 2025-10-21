@@ -314,7 +314,7 @@ export async function readEmail(
             toolList: [],
             conversation: [
               {
-                id: 1,
+                id: "1",
                 content: emailBody,
                 type: "user",
               },

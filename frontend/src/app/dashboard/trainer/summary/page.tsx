@@ -37,7 +37,7 @@ export default function SummaryPage() {
       <AdaptiveFilterLayout
         Header={<ClientManagementHeader />}
         MainContent={<ClientManagementPanel contextBadges={contextBadges} selectedClient={selectedClient} />}
-        FilterPanel={<SummaryFilterPanel addBadge={addBadge} onClientSelect={onClientSelect} clearClientSelection={clearClientSelection} />}
+        FilterPanel={<SummaryFilterPanel onClientSelect={onClientSelect} clearClientSelection={clearClientSelection} />}
       />
     </div>
   );

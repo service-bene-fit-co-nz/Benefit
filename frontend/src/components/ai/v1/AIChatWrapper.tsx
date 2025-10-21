@@ -9,7 +9,7 @@ import { agentQuery } from "@/utils/ai/agent/chatAgent";
 import { AIConversation } from "@/utils/ai/agent/agentTypes";
 
 interface ChatMessage {
-  id: string | number;
+  id: string;
   content: string;
   type: "user" | "ai" | "error";
 }
