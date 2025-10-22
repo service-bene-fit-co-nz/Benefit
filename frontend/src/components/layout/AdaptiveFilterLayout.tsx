@@ -72,7 +72,7 @@ export function AdaptiveFilterLayout({
           </SheetContent>
         </Sheet>
       </div>
-      <div className="flex-1 p-4">{MainContent}</div>
+      <div className="flex-1">{MainContent}</div>
     </div>
   );
 }
