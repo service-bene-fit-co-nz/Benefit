@@ -1,6 +1,6 @@
 import React from "react";
 import { AIChatConversation } from "@/components/ai/v2/AIChatConversation";
-import { ToolType } from "@/utils/ai/toolManager/toolManager";
+import { ToolType } from "@/utils/ai/langchain/toolManager/toolManager";
 
 const TrainerAIPage = () => {
   const llmTools: ToolType[] = []; // Define LLM tools as an empty array for this page

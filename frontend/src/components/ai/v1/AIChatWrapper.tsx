@@ -1,12 +1,20 @@
-'use client';
+"use client";
 
 import { useState } from "react";
-import { Conversation, ConversationContent, ConversationScrollButton } from "./AIChat"; // AIChat is now Conversation
-import { PromptInput, PromptInputTextarea, PromptInputSubmit } from "./PromptInput";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "./AIChat"; // AIChat is now Conversation
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputSubmit,
+} from "./PromptInput";
 import { Message, MessageContent } from "./Message";
 import { Response } from "./Response";
-import { agentQuery } from "@/utils/ai/agent/chatAgent";
-import { AIConversation } from "@/utils/ai/agent/agentTypes";
+import { agentQuery } from "@/utils/ai/langchain/agent/reactAgent";
+import { AIConversation } from "@/utils/ai/langchain/agent/agentTypes";
 
 interface ChatMessage {
   id: string;
@@ -54,7 +62,10 @@ export function AIChatWrapper() {
     <Conversation className="relative w-full h-full">
       <ConversationContent>
         {messages.map((message) => (
-          <Message key={message.id} from={message.type === "user" ? "user" : "assistant"}>
+          <Message
+            key={message.id}
+            from={message.type === "user" ? "user" : "assistant"}
+          >
             <MessageContent>
               <Response>{message.content}</Response>
             </MessageContent>

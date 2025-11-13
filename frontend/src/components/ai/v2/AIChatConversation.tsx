@@ -41,14 +41,15 @@ import { MicIcon, PaperclipIcon, RotateCcwIcon } from "lucide-react";
 import { nanoid } from "nanoid";
 import { type FormEventHandler, useCallback, useEffect, useState } from "react";
 
-import { agentQuery } from "@/utils/ai/agent/chatAgent";
+import { agentQuery } from "@/utils/ai/langchain/agent/reactAgent";
+import { chatAction } from "@/utils/ai/langchain/agent/langchainAgent";
 import {
   AIConversation,
   AIContent,
   LLMType,
-} from "@/utils/ai/agent/agentTypes";
+} from "@/utils/ai/langchain/agent/agentTypes";
 import { useAuth } from "@/hooks/use-auth";
-import { ToolType } from "@/utils/ai/toolManager/toolManager";
+import { ToolType } from "@/utils/ai/langchain/toolManager/toolManager";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
 
 type ChatMessage = {
@@ -249,42 +250,105 @@ export function AIChatConversation({
       setInputValue("");
       setIsTyping(true);
 
-      try {
-        const conversationRequest: AIConversation = {
-          model: selectedModel,
-          prompt: "You are a helpful assistant.", // This can be made dynamic
-          toolList: llmTools, // Pass llmTools here
-          conversation: updatedMessages.map((msg) => ({
-            id: msg.id,
+      if (selectedModel === "Gemini") {
+        try {
+          const history = messages.map((msg) => ({
+            role:
+              msg.role === "assistant" ? ("ai" as const) : ("user" as const),
             content: msg.content,
-            type: msg.role === "user" ? "user" : "ai",
-          })),
-        };
+          }));
 
-        const aiResponse = await agentQuery(conversationRequest);
+          const stream = await chatAction(userMessage.content, history);
 
-        const assistantMessage: ChatMessage = {
-          id: nanoid(),
-          content: aiResponse.content,
-          role: "assistant",
-          timestamp: new Date(),
-          isStreaming: false, // Assuming agentQuery returns full content, not streaming
-        };
-        setMessages((prev) => [...prev, assistantMessage]);
-      } catch (error: any) {
-        console.error("Error calling agentQuery:", error);
-        setMessages((prev) => [
-          ...prev,
-          {
+          const assistantMessageId = nanoid();
+          const assistantMessage: ChatMessage = {
+            id: assistantMessageId,
+            content: "",
+            role: "assistant",
+            timestamp: new Date(),
+            isStreaming: true,
+          };
+
+          setMessages((prev) => [...prev, assistantMessage]);
+
+          const reader = stream.getReader();
+          const decoder = new TextDecoder();
+
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessageId
+                    ? { ...msg, isStreaming: false }
+                    : msg
+                )
+              );
+              break; // Exit loop
+            }
+            const chunk = decoder.decode(value);
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: msg.content + chunk }
+                  : msg
+              )
+            );
+          }
+        } catch (error: any) {
+          console.error("Error calling chatAction:", error);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: nanoid(),
+              content: `Error: ${error.message}`,
+              role: "assistant",
+              timestamp: new Date(),
+              isStreaming: false,
+            },
+          ]);
+        } finally {
+          setIsTyping(false);
+        }
+      } else {
+        try {
+          const conversationRequest: AIConversation = {
+            model: selectedModel,
+            prompt: "You are a helpful assistant.",
+            toolList: llmTools,
+            conversation: updatedMessages.map((msg) => ({
+              id: msg.id,
+              content: msg.content,
+              type: msg.role === "user" ? "user" : "ai",
+            })),
+          };
+
+          const aiResponse = await agentQuery(conversationRequest);
+
+          const assistantMessage: ChatMessage = {
             id: nanoid(),
-            content: `Error: ${error.message}`,
+            content: aiResponse.content,
             role: "assistant",
             timestamp: new Date(),
             isStreaming: false,
-          },
-        ]);
-      } finally {
-        setIsTyping(false);
+          };
+          setMessages((prev) => [...prev, assistantMessage]);
+        } catch (error: any) {
+          console.error("Error calling agentQuery:", error);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: nanoid(),
+              content: `Error: ${error.message}`,
+              role: "assistant",
+              timestamp: new Date(),
+              isStreaming: false,
+            },
+          ]);
+        } finally {
+          setIsTyping(false);
+        }
       }
     },
     [inputValue, isTyping, messages, selectedModel, llmTools]

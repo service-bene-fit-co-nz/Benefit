@@ -6,8 +6,8 @@ import { SummaryFilterPanel } from "@/components/dashboard/trainer/summary/Summa
 import { ClientManagementPanel } from "@/components/dashboard/trainer/summary/ClientManagementPanel";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
 import { AIChatConversation } from "@/components/ai/v2/AIChatConversation";
-import { ToolType } from "@/utils/ai/toolManager/toolManager";
-import { getClientDetails, getClientNotes } from "@/utils/ai/toolManager/tools/client/client";
+import { ToolType } from "@/utils/ai/langchain/toolManager/toolManager";
+import { getClientDetails, getClientNotes } from "@/utils/ai/langchain/toolManager/tools/client/client";
 
 export default function CheckIn() {
   const [selectedClient, setSelectedClient] = useState<

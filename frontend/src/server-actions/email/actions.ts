@@ -7,13 +7,13 @@ import prisma from "@/utils/prisma/client";
 import { ConnectedOAuthAccount, Email, From } from "./types";
 import { google } from "googleapis";
 import { getAuthenticatedGmailClient } from "@/lib/gmail-utils";
-import { agentQuery } from "@/utils/ai/agent/agent";
+import { agentQuery } from "@/utils/ai/langchain/agent/agent";
 import {
   AITool,
   AIContent,
   AIConversation,
   LLMType,
-} from "@/utils/ai/agent/agentTypes";
+} from "@/utils/ai/langchain/agent/agentTypes";
 
 export async function readConnectedOAuthAccounts(): Promise<
   ActionResult<ConnectedOAuthAccount[]>

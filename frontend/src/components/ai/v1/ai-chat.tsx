@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { agentQuery } from "@/utils/ai/agent/agent";
+import { agentQuery } from "@/utils/ai/langchain/agent/agent";
 import {
   AITool,
   AIContent,
   AIConversation,
   LLMType,
-} from "@/utils/ai/agent/agentTypes";
+} from "@/utils/ai/langchain/agent/agentTypes";
 import {
   DropdownMenu,
   DropdownMenuContent,

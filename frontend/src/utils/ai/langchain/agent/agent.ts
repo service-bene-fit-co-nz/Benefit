@@ -1,13 +1,13 @@
-// utils/ai/agent/chatAgent.ts
+// utils/ai/langchain/agent/agent.ts
 "use server";
 
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
-import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
+import { BaseMessage, AIMessage } from "@langchain/core/messages";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { LLMType, AIConversation, AIContent, AIError } from "./agentTypes";
-import { getTool } from "@/utils/ai/toolManager/toolManager";
+import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
 
 export const agentQuery = async (
   request: AIConversation
@@ -27,9 +27,10 @@ export const agentQuery = async (
     });
 
     const chatMessages: BaseMessage[] = request.conversation
-      .filter((item) => item.type === "user" || item.type === "ai")
+      .filter((item) => item.type !== "error")
       .map((item) => {
         if (item.type === "user") {
+          const { HumanMessage } = require("@langchain/core/messages");
           return new HumanMessage(item.content);
         } else if (item.type === "ai") {
           return new AIMessage(item.content);
@@ -82,9 +83,8 @@ export const agentQuery = async (
       };
     }
     return {
-              id: (Date.now() + 1).toString(),
-            content: `An Error occurred: ${error.message}`,
-      
+      id: (Date.now() + 1).toString(),
+      content: `An Error occurred: ${error.message}`,
       type: "error",
     };
   }
