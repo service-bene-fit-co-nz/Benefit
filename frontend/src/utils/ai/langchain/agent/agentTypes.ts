@@ -1,7 +1,6 @@
 import { DynamicTool } from "@langchain/core/tools";
 import { ToolType } from "../toolManager/toolManager";
-
-export type LLMType = "Gemini" | "ChatGPT" | "Groq";
+import { LLMType } from "../../types";
 
 export interface AIContent {
   id: string;

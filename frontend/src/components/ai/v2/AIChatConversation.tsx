@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MicIcon, PaperclipIcon, RotateCcwIcon } from "lucide-react";
 import { nanoid } from "nanoid";
+
 import { type FormEventHandler, useCallback, useEffect, useState } from "react";
 
 import { agentQuery } from "@/utils/ai/langchain/agent/reactAgent";
@@ -46,8 +47,8 @@ import { chatAction } from "@/utils/ai/langchain/agent/langchainAgent";
 import {
   AIConversation,
   AIContent,
-  LLMType,
 } from "@/utils/ai/langchain/agent/agentTypes";
+import { LLMType } from "@/utils/ai/types";
 import { useAuth } from "@/hooks/use-auth";
 import { ToolType } from "@/utils/ai/langchain/toolManager/toolManager";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";

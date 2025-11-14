@@ -49,6 +49,10 @@ const menuDefinition: NavData = {
           url: "/dashboard/trainer/ai",
         },
         {
+          title: "Vercel",
+          url: "/dashboard/trainer/vercel",
+        },
+        {
           title: "Check In",
           url: "/dashboard/trainer/checkin",
         },
