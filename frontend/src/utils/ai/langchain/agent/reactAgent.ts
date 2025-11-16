@@ -6,8 +6,9 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
 import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { LLMType, AIConversation, AIContent, AIError } from "./agentTypes";
+import { AIConversation, AIContent, AIError } from "./agentTypes";
 import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
+import { LLMType } from "../../types";
 
 export const agentQuery = async (
   request: AIConversation
@@ -82,9 +83,9 @@ export const agentQuery = async (
       };
     }
     return {
-              id: (Date.now() + 1).toString(),
-            content: `An Error occurred: ${error.message}`,
-      
+      id: (Date.now() + 1).toString(),
+      content: `An Error occurred: ${error.message}`,
+
       type: "error",
     };
   }

@@ -25,7 +25,12 @@ import {
 } from "@/components/ui/shadcn-io/ai/prompt-input";
 import { Response } from "@/components/ui/shadcn-io/ai/response";
 import { Button } from "@/components/ui/button";
-import { MicIcon, PaperclipIcon, RotateCcwIcon } from "lucide-react";
+import {
+  MicIcon,
+  PaperclipIcon,
+  RotateCcwIcon,
+  UserRoundCheck,
+} from "lucide-react";
 
 import {
   useChat,
@@ -57,9 +62,23 @@ export function AIChatConversation({
   const [inputValue, setInputValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<LLMType>(models[0].id);
 
+  const systemContext =
+    "You are a helpful and friendly travel agent specializing in trips to Japan. All your responses must be enthusiastic and focus on cultural or historical aspects.";
+
+  const initialContext: UIMessage[] = [
+    {
+      id: "system-context", // A unique ID
+      role: "system",
+      parts: [{ type: "text", text: systemContext }],
+      // Note: The system message content is usually not rendered in the UI,
+      // but its role is to instruct the model on the backend.
+    },
+  ];
+
   const { messages, sendMessage, setMessages, status } = useChat({
+    messages: initialContext,
     transport: new DefaultChatTransport({
-      api: "/api/chat",
+      api: "/api/ai",
     }),
   });
 
@@ -67,24 +86,23 @@ export function AIChatConversation({
     (status as string) === "loading" ||
     (status as string) === "streaming-final-response";
 
-  // const typedSendMessage: UseChatHelpers<VercelMessage>["sendMessage"] =
-  //   sendMessage;
+  const body: any = {
+    currentTopicId: "topic-xyz-42",
+    searchKeywords: "quantum physics",
+  };
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     if (!inputValue.trim()) return;
-
-    sendMessage({ text: inputValue });
-    // sendMessage(
-    //   [{ type: "text" as const, text: inputValue }] as const, // <-- 💡 Add 'as const' here
-    //   {
-    //     data: {
-    //       llmTools,
-    //       model: selectedModel,
-    //     },
-    //   }
-    // );
-
+    sendMessage(
+      {
+        role: "user",
+        parts: [{ type: "text", text: inputValue }],
+      },
+      {
+        body: body,
+      }
+    );
     setInputValue("");
   };
 
@@ -188,12 +206,15 @@ export function AIChatConversation({
           />
           <PromptInputToolbar>
             <PromptInputTools>
-              <PromptInputButton disabled={isLoading}>
+              {/* <PromptInputButton disabled={isLoading}>
                 <PaperclipIcon size={16} />
               </PromptInputButton>
               <PromptInputButton disabled={isLoading}>
                 <MicIcon size={16} />
                 <span>Voice</span>
+              </PromptInputButton> */}
+              <PromptInputButton disabled={isLoading}>
+                <UserRoundCheck size={16} />
               </PromptInputButton>
               <PromptInputModelSelect
                 value={selectedModel}
