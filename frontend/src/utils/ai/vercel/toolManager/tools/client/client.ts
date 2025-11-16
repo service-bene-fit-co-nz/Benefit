@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { tool } from "ai";
 import { fetchClientById } from "@/server-actions/trainer/clients/actions";
-import { fetchClientNotes } from "@/server-actions/client/notes/actions";
+import { fetchClientNotes, createClientNote } from "@/server-actions/client/notes/actions";
+import { ClientNoteType } from "@prisma/client";
 import { findClientByName } from "@/server-actions/client/actions";
 import { readAllClients } from "@/server-actions/admin/clients/actions";
 import { fetchRawFitbitDatabyDate } from "@/server-actions/fitbit/actions";
@@ -224,3 +225,64 @@ export const getRawFitbitDataTool = tool({
     }
   },
 });
+
+// --- New Input Schema for ClientNote ---
+const SaveClientNoteInputSchema = z.object({
+  clientId: z.string().describe("The unique ID of the client."),
+  noteType: z.nativeEnum(ClientNoteType).describe("The type of the note."),
+  noteMetadata: z
+    .record(z.string(), z.any())
+    .describe(
+      "A JSON object for metadata. The LLM must confirm this with the user before saving."
+    ),
+  formData: z
+    .record(z.string(), z.any())
+    .describe(
+      "A JSON object for form data. The LLM must confirm this with the user before saving."
+    ),
+});
+
+// ------------------------------------
+// 6. saveClientNote Tool
+// ------------------------------------
+export const saveClientNoteTool = tool({
+  description:
+    `Saves a new note for a client. The LLM should always confirm the data for noteMetadata and formData with the user before proceeding. Only trainer notes can be stored using 
+    this function. 
+    noteMetaData field should include a title field and and author as part of the json
+    formData field should include the note test in a json parameter called content
+    Before committing the data to to the database always display the data that wil be stored in the db and ask if it is correct before saving
+    `,
+  inputSchema: SaveClientNoteInputSchema,
+  execute: async ({
+    clientId,
+    noteType,
+    noteMetadata,
+    formData,
+  }: z.infer<typeof SaveClientNoteInputSchema>) => {
+    try {
+      const newNote = await createClientNote(
+        clientId,
+        noteType,
+        noteMetadata,
+        formData
+      );
+
+      return {
+        status: "success",
+        message: "Client note saved successfully.",
+        noteId: newNote.id,
+      };
+    } catch (error: unknown) {
+      console.error("Error saving client note:", error);
+      return {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while saving the client note.",
+      };
+    }
+  },
+});
+
+

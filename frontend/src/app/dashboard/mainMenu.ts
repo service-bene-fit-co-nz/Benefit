@@ -44,22 +44,22 @@ const menuDefinition: NavData = {
       icon: "Users",
       roles: ["SystemAdmin", "Admin"],
       items: [
+        // {
+        //   title: "AI",
+        //   url: "/dashboard/trainer/ai",
+        // },
         {
           title: "AI",
-          url: "/dashboard/trainer/ai",
-        },
-        {
-          title: "Vercel",
           url: "/dashboard/trainer/vercel",
         },
-        {
-          title: "Check In",
-          url: "/dashboard/trainer/checkin",
-        },
-        {
-          title: "Clients",
-          url: "/dashboard/trainer/clients",
-        },
+        // {
+        //   title: "Check In",
+        //   url: "/dashboard/trainer/checkin",
+        // },
+        // {
+        //   title: "Clients",
+        //   url: "/dashboard/trainer/clients",
+        // },
         // {
         //   title: "Summary",
         //   url: "/dashboard/trainer/summary",

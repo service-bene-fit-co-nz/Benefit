@@ -10,10 +10,10 @@ import {
 
 import { getClientDetailsTool } from "@/utils/ai/vercel/toolManager/tools/client/client";
 import {
-  getClientNotesTool,
-  getClientIdByNameTool,
+  getClientNotesTool,  
   getAllClientsTool,
   getRawFitbitDataTool,
+  saveClientNoteTool,
 } from "@/utils/ai/vercel/toolManager/tools/client/client";
 
 export async function POST(req: Request) {
@@ -52,12 +52,12 @@ export async function POST(req: Request) {
     model: model,
     system: "You are a helpful assistant.",
     messages: convertToModelMessages(messages),
-    tools: {
-      //getClientIdByName: getClientIdByNameTool,
+    tools: {      
       getAllClients: getAllClientsTool,
       getClientDetails: getClientDetailsTool,
       getClientNotes: getClientNotesTool,
       getRawFitbitData: getRawFitbitDataTool,
+      saveClientNote: saveClientNoteTool
     },
     stopWhen: stepCountIs(5),
   });
