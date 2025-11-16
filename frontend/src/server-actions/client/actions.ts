@@ -277,3 +277,78 @@ export async function updateClient(
     };
   }
 }
+
+export async function findClientByName(name: {
+  firstName?: string;
+  lastName?: string;
+}): Promise<
+  ActionResult<
+    { id: string; firstName: string | null; lastName: string | null }[]
+  >
+> {
+  const { firstName, lastName } = name;
+
+  if (!firstName && !lastName) {
+    return {
+      success: false,
+      message: "At least one of first name or last name must be provided.",
+      code: "VALIDATION_ERROR",
+    };
+  }
+
+  try {
+    const where: Prisma.ClientWhereInput = {
+      AND: [],
+    };
+
+    if (firstName) {
+      (where.AND as Prisma.ClientWhereInput[]).push({
+        firstName: {
+          contains: firstName,
+          mode: "insensitive",
+        },
+      });
+    }
+
+    if (lastName) {
+      (where.AND as Prisma.ClientWhereInput[]).push({
+        lastName: {
+          contains: lastName,
+          mode: "insensitive",
+        },
+      });
+    }
+
+    const clients = await prisma.client.findMany({
+      where,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+      take: 10, // Limit results to avoid returning too many clients
+    });
+
+    if (clients.length === 0) {
+      return {
+        success: true,
+        data: [],
+        message: "No clients found matching the provided name.",
+      };
+    }
+
+    return {
+      success: true,
+      data: clients,
+    };
+  } catch (err: any) {
+    console.error(err);
+    return {
+      success: false,
+      message: `An unexpected server error occurred: ${
+        err.message || "Unknown error"
+      }`,
+      code: "UNEXPECTED_SERVER_ERROR",
+    };
+  }
+}

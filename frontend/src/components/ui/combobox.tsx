@@ -28,6 +28,7 @@ interface ComboboxProps {
   onSearchChange?: (search: string) => void;
   modal?: boolean;
   className?: string;
+  disabled?: boolean; // Added disabled prop
 }
 
 export function Combobox({
@@ -40,6 +41,7 @@ export function Combobox({
   onSearchChange,
   modal = false,
   className,
+  disabled, // Destructure disabled prop
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -51,6 +53,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           className={cn("w-full justify-between", className, !value && "text-muted-foreground")}
+          disabled={disabled} // Pass disabled prop to Button
         >
           {value ? (
             <span className="block truncate flex-1">

@@ -27,9 +27,9 @@ export async function fetchClientsForTrainer(
     !session.user ||
     !session.user.roles || // Ensure roles array exists
     !session.user.roles.some((role) =>
-      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
-        role
-      )
+      (
+        [UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]
+      ).includes(role)
     )
   ) {
     throw new Error("Unauthorized");
@@ -90,45 +90,61 @@ export async function fetchClientsForTrainer(
       },
     });
 
-    const clientsWithEmails = await Promise.all(clients.map(async (client) => {
+    const clientsWithEmails = await Promise.all(
+      clients.map(async (client) => {
         let userEmail = "N/A";
         let phone: string | undefined;
         try {
-            const user = await prisma.user.findUnique({
-                where: { id: client.authId },
-                select: { email: true }
-            });
-            userEmail = user?.email || "N/A";
-            if (Array.isArray(client.contactInfo)) {
-                const primaryPhone = client.contactInfo.find(info => (info as any).type === 'phone' && (info as any).primary === true);
-                if (primaryPhone) {
-                    phone = (primaryPhone as any).value;
-                }
-            } else if (typeof client.contactInfo === 'object' && client.contactInfo !== null) {
-                if ((client.contactInfo as any).type === 'phone' && (client.contactInfo as any).primary === true) {
-                    phone = (client.contactInfo as any).value;
-                } else if ((client.contactInfo as any).phone) {
-                    phone = (client.contactInfo as any).phone;
-                }
+          const user = await prisma.user.findUnique({
+            where: { id: client.authId },
+            select: { email: true },
+          });
+          userEmail = user?.email || "N/A";
+          if (Array.isArray(client.contactInfo)) {
+            const primaryPhone = client.contactInfo.find(
+              (info) =>
+                (info as any).type === "phone" && (info as any).primary === true
+            );
+            if (primaryPhone) {
+              phone = (primaryPhone as any).value;
             }
+          } else if (
+            typeof client.contactInfo === "object" &&
+            client.contactInfo !== null
+          ) {
+            if (
+              (client.contactInfo as any).type === "phone" &&
+              (client.contactInfo as any).primary === true
+            ) {
+              phone = (client.contactInfo as any).value;
+            } else if ((client.contactInfo as any).phone) {
+              phone = (client.contactInfo as any).phone;
+            }
+          }
         } catch (error) {
-            console.error(`Error fetching user/contact info for client ID ${client.id} (authId: ${client.authId}):`, error);
-            userEmail = "Error fetching email";
+          console.error(
+            `Error fetching user/contact info for client ID ${client.id} (authId: ${client.authId}):`,
+            error
+          );
+          userEmail = "Error fetching email";
         }
 
-        const fullName = [client.firstName, client.lastName].filter(Boolean).join(" ");
-        
+        const fullName = [client.firstName, client.lastName]
+          .filter(Boolean)
+          .join(" ");
+
         return {
-            id: client.id,
-            name: fullName,
-            email: userEmail,
-            phone: phone || undefined,
-            dateOfBirth: client.birthDate?.toISOString().split('T')[0],
-            avatarUrl: client.avatarUrl || undefined,
-            gender: client.gender || undefined,
-            settings: client.settings || undefined,
+          id: client.id,
+          name: fullName,
+          email: userEmail,
+          phone: phone || undefined,
+          dateOfBirth: client.birthDate?.toISOString().split("T")[0],
+          avatarUrl: client.avatarUrl || undefined,
+          gender: client.gender || undefined,
+          settings: client.settings || undefined,
         };
-    }));
+      })
+    );
 
     return clientsWithEmails;
   } catch (error) {
@@ -147,9 +163,9 @@ export async function fetchClientById(
     !session.user ||
     !session.user.roles ||
     !session.user.roles.some((role) =>
-      ([UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]).includes(
-        role
-      )
+      (
+        [UserRole.SystemAdmin, UserRole.Admin, UserRole.Trainer] as UserRole[]
+      ).includes(role)
     )
   ) {
     throw new Error("Unauthorized");
@@ -189,31 +205,43 @@ export async function fetchClientById(
       userEmail = user?.email || "N/A";
       if (Array.isArray(client.contactInfo)) {
         const primaryPhone = client.contactInfo.find(
-          (info) => (info as any).type === "phone" && (info as any).primary === true
+          (info) =>
+            (info as any).type === "phone" && (info as any).primary === true
         );
         if (primaryPhone) {
           phone = (primaryPhone as any).value;
         }
-      } else if (typeof client.contactInfo === "object" && client.contactInfo !== null) {
-        if ((client.contactInfo as any).type === "phone" && (client.contactInfo as any).primary === true) {
+      } else if (
+        typeof client.contactInfo === "object" &&
+        client.contactInfo !== null
+      ) {
+        if (
+          (client.contactInfo as any).type === "phone" &&
+          (client.contactInfo as any).primary === true
+        ) {
           phone = (client.contactInfo as any).value;
         } else if ((client.contactInfo as any).phone) {
           phone = (client.contactInfo as any).phone;
         }
       }
     } catch (error) {
-      console.error(`Error fetching user/contact info for client ID ${client.id} (authId: ${client.authId}):`, error);
+      console.error(
+        `Error fetching user/contact info for client ID ${client.id} (authId: ${client.authId}):`,
+        error
+      );
       userEmail = "Error fetching email";
     }
 
-    const fullName = [client.firstName, client.lastName].filter(Boolean).join(" ");
+    const fullName = [client.firstName, client.lastName]
+      .filter(Boolean)
+      .join(" ");
 
     return {
       id: client.id,
       name: fullName,
       email: userEmail,
       phone: phone || undefined,
-      dateOfBirth: client.birthDate?.toISOString().split('T')[0],
+      dateOfBirth: client.birthDate?.toISOString().split("T")[0],
       avatarUrl: client.avatarUrl || undefined,
       gender: client.gender || undefined,
       settings: client.settings || undefined,

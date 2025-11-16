@@ -5,7 +5,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
 import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { AIConversation, AIContent, AIError } from "./agentTypes";
+import { AIConversation, AIContent, AIError } from "../../langchain/agent/agentTypes";
 import { LLMType } from "../../types";
 import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
 import { Experimental_Agent as Agent } from "ai";

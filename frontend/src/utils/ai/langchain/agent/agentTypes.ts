@@ -2,6 +2,8 @@ import { DynamicTool } from "@langchain/core/tools";
 import { ToolType } from "../toolManager/toolManager";
 import { LLMType } from "../../types";
 
+export type { LLMType };
+
 export interface AIContent {
   id: string;
   content: string;

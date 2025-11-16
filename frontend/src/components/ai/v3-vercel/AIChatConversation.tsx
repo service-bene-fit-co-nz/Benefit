@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/shadcn-io/ai/prompt-input";
 import { Response } from "@/components/ui/shadcn-io/ai/response";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   MicIcon,
   PaperclipIcon,
@@ -32,18 +33,22 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 
-import {
-  useChat,
-  UIMessage as VercelMessage,
-  UseChatHelpers,
-} from "@ai-sdk/react";
+import { useChat, type UIMessage } from "@ai-sdk/react";
 import * as ToolManager from "@/utils/ai/langchain/toolManager/toolManager";
 import { useAuth } from "@/hooks/use-auth";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
 import { type FormEventHandler, useCallback, useState } from "react";
 import { LLMType } from "@/utils/ai/types";
 import { DefaultChatTransport } from "ai";
-import { type UIMessage } from "@ai-sdk/react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  fetchPrompts,
+  type PromptData,
+} from "@/server-actions/admin/prompts/actions";
+import {
+  readAllClients,
+  type ClientSearchResult,
+} from "@/server-actions/admin/clients/actions";
 
 const models: { id: LLMType; name: string }[] = [
   { id: "Gemini", name: "Gemini" },
@@ -61,9 +66,25 @@ export function AIChatConversation({
   const { user } = useAuth();
   const [inputValue, setInputValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<LLMType>(models[0].id);
+  const [selectedPrompt, setSelectedPrompt] = useState<string | undefined>();
+  const [selectedClientId, setSelectedClientId] = useState<
+    string | undefined
+  >();
+
+  const { data: prompts, isLoading: promptsLoading } = useQuery<PromptData[]>({
+    queryKey: ["prompts"],
+    queryFn: () => fetchPrompts(),
+  });
+
+  const { data: clientsResult, isLoading: clientsLoading } = useQuery({
+    queryKey: ["allClients"],
+    queryFn: () => readAllClients(),
+  });
+
+  const clients = clientsResult?.success ? clientsResult.data : [];
 
   const systemContext =
-    "You are a helpful and friendly travel agent specializing in trips to Japan. All your responses must be enthusiastic and focus on cultural or historical aspects.";
+    "You are a helpful and knowledgeable fitness and nutrition assistant. Provide accurate and concise information to help users achieve their health goals.";
 
   const initialContext: UIMessage[] = [
     {
@@ -82,13 +103,50 @@ export function AIChatConversation({
     }),
   });
 
+  const isThinking = status === "submitted" || status === "streaming";
+
+  const handleModelChange = (modelId: LLMType) => {
+    setSelectedModel(modelId);
+  };
+
+  const handleClientChange = (clientId: string) => {
+    setSelectedClientId(clientId);
+  };
+
+  const handlePromptChange = (promptId: string) => {
+    setSelectedPrompt(promptId);
+    const selected = prompts?.find((p) => p.id === promptId);
+    if (selected) {
+      const newSystemMessage: UIMessage = {
+        id: "system-context",
+        role: "system",
+        parts: [{ type: "text", text: selected.prompt }],
+      };
+      setMessages((currentMessages) => {
+        const systemMessageIndex = currentMessages.findIndex(
+          (m) => m.role === "system"
+        );
+        if (systemMessageIndex !== -1) {
+          const newMessages = [...currentMessages];
+          newMessages[systemMessageIndex] = newSystemMessage;
+          return newMessages;
+        } else {
+          return [...currentMessages, newSystemMessage];
+        }
+      });
+    }
+  };
+
   const isLoading =
     (status as string) === "loading" ||
     (status as string) === "streaming-final-response";
 
+  const isAnythingLoading: boolean =
+    isLoading || promptsLoading || clientsLoading;
+
   const body: any = {
-    currentTopicId: "topic-xyz-42",
-    searchKeywords: "quantum physics",
+    selectedModel: selectedModel,
+    selectedClientId: selectedClientId,
   };
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
@@ -176,7 +234,7 @@ export function AIChatConversation({
               </Message>
             </div>
           ))}
-          {isLoading && (
+          {isThinking && (
             <div className="space-y-3">
               <Message from="assistant">
                 <MessageContent>
@@ -202,24 +260,53 @@ export function AIChatConversation({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Ask me anything lets talk fitness..."
-            disabled={isLoading}
+            disabled={isAnythingLoading}
           />
           <PromptInputToolbar>
             <PromptInputTools>
-              {/* <PromptInputButton disabled={isLoading}>
+              {/* 
+              <PromptInputButton disabled={isAnythingLoading}>
                 <PaperclipIcon size={16} />
               </PromptInputButton>
-              <PromptInputButton disabled={isLoading}>
+              <PromptInputButton disabled={isAnythingLoading}>
                 <MicIcon size={16} />
                 <span>Voice</span>
-              </PromptInputButton> */}
-              <PromptInputButton disabled={isLoading}>
-                <UserRoundCheck size={16} />
               </PromptInputButton>
+              <PromptInputButton disabled={isAnythingLoading}>
+                <UserRoundCheck size={16} />
+              </PromptInputButton> 
+              */}
+              <Combobox
+                options={
+                  clients?.map((client) => ({
+                    value: client.id,
+                    label: `${client.firstName} ${client.lastName}`,
+                  })) || []
+                }
+                value={selectedClientId}
+                onValueChange={handleClientChange}
+                placeholder="Select a client"
+                disabled={isAnythingLoading}
+                className="w-[180px]"
+              />
+              <Combobox
+                options={
+                  prompts?.map((prompt) => ({
+                    value: prompt.id,
+                    label: prompt.title,
+                  })) || []
+                }
+                value={selectedPrompt}
+                onValueChange={handlePromptChange}
+                placeholder="Select a prompt"
+                disabled={isAnythingLoading}
+                className="w-[180px]"
+              />
+
               <PromptInputModelSelect
                 value={selectedModel}
-                onValueChange={(value) => setSelectedModel(value as LLMType)}
-                disabled={isLoading}
+                onValueChange={handleModelChange}
+                disabled={isAnythingLoading}
               >
                 <PromptInputModelSelectTrigger>
                   <PromptInputModelSelectValue />
@@ -234,8 +321,8 @@ export function AIChatConversation({
               </PromptInputModelSelect>
             </PromptInputTools>
             <PromptInputSubmit
-              disabled={!inputValue.trim() || isLoading}
-              status={isLoading ? "streaming" : "ready"}
+              disabled={!inputValue.trim() || isAnythingLoading}
+              status={isAnythingLoading ? "streaming" : "ready"}
             />
           </PromptInputToolbar>
         </PromptInput>
