@@ -6,6 +6,7 @@ import { fetchClientById } from "@/server-actions/trainer/clients/actions";
 import { fetchClientNotes } from "@/server-actions/client/notes/actions";
 import { findClientByName } from "@/server-actions/client/actions";
 import { readAllClients } from "@/server-actions/admin/clients/actions";
+import { fetchRawFitbitDatabyDate } from "@/server-actions/fitbit/actions";
 
 // --- Input Schema Definition ---
 // Define a single Zod schema that can be reused for both tools
@@ -167,6 +168,58 @@ export const getAllClientsTool = tool({
           error instanceof Error
             ? error.message
             : "An unknown error occurred while finding client by name.",
+      };
+    }
+  },
+});
+
+// --- New Input Schema ---
+const FitbitDataInputSchema = z.object({
+  clientId: z.string().describe("The unique ID of the client."),
+  startDate: z.string().describe("The start date in YYYY-MM-DD format."),
+  endDate: z.string().describe("The end date in YYYY-MM-DD format."),
+});
+
+// ------------------------------------
+// 5. getRawFitbitData Tool
+// ------------------------------------
+export const getRawFitbitDataTool = tool({
+  description:
+    "Fetches raw Fitbit data for a client within a specified date range.",
+  inputSchema: FitbitDataInputSchema,
+  execute: async ({
+    clientId,
+    startDate,
+    endDate,
+  }: z.infer<typeof FitbitDataInputSchema>) => {
+    try {
+      const result = await fetchRawFitbitDatabyDate(
+        clientId,
+        new Date(startDate),
+        new Date(endDate)
+      );
+
+      if (!result.success) {
+        return {
+          error: result.message,
+        };
+      }
+
+      if (result.data && result.data.length === 0) {
+        return {
+          status: "not_found",
+          message: "No Fitbit data found for the specified date range.",
+        };
+      }
+
+      return result.data;
+    } catch (error: unknown) {
+      console.error("Error fetching raw Fitbit data:", error);
+      return {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while fetching raw Fitbit data.",
       };
     }
   },

@@ -13,6 +13,7 @@ import {
   getClientNotesTool,
   getClientIdByNameTool,
   getAllClientsTool,
+  getRawFitbitDataTool,
 } from "@/utils/ai/vercel/toolManager/tools/client/client";
 
 export async function POST(req: Request) {
@@ -22,7 +23,6 @@ export async function POST(req: Request) {
   }: { messages: UIMessage[]; selectedModel?: "Gemini" | "ChatGPT" | "Groq" } =
     await req.json();
 
-  console.log("Selected Model:", selectedModel);
   let model;
   switch (selectedModel) {
     case "Gemini":
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
       getAllClients: getAllClientsTool,
       getClientDetails: getClientDetailsTool,
       getClientNotes: getClientNotesTool,
+      getRawFitbitData: getRawFitbitDataTool,
     },
     stopWhen: stepCountIs(5),
   });

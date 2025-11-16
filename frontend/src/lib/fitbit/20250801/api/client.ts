@@ -58,7 +58,7 @@ export interface ApiConfig<SecurityDataType = unknown> {
   baseUrl?: string;
   baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">;
   securityWorker?: (
-    securityData: SecurityDataType | null,
+    securityData: SecurityDataType | null
   ) => Promise<RequestParams | void> | RequestParams | void;
   customFetch?: typeof fetch;
 }
@@ -104,7 +104,9 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected encodeQueryParam(key: string, value: any) {
     const encodedKey = encodeURIComponent(key);
-    return `${encodedKey}=${encodeURIComponent(typeof value === "number" ? value : `${value}`)}`;
+    return `${encodedKey}=${encodeURIComponent(
+      typeof value === "number" ? value : `${value}`
+    )}`;
   }
 
   protected addQueryParam(query: QueryParamsType, key: string) {
@@ -119,13 +121,13 @@ export class HttpClient<SecurityDataType = unknown> {
   protected toQueryString(rawQuery?: QueryParamsType): string {
     const query = rawQuery || {};
     const keys = Object.keys(query).filter(
-      (key) => "undefined" !== typeof query[key],
+      (key) => "undefined" !== typeof query[key]
     );
     return keys
       .map((key) =>
         Array.isArray(query[key])
           ? this.addArrayQueryParam(query, key)
-          : this.addQueryParam(query, key),
+          : this.addQueryParam(query, key)
       )
       .join("&");
   }
@@ -160,8 +162,8 @@ export class HttpClient<SecurityDataType = unknown> {
           property instanceof Blob
             ? property
             : typeof property === "object" && property !== null
-              ? JSON.stringify(property)
-              : `${property}`,
+            ? JSON.stringify(property)
+            : `${property}`
         );
         return formData;
       }, new FormData());
@@ -171,7 +173,7 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected mergeRequestParams(
     params1: RequestParams,
-    params2?: RequestParams,
+    params2?: RequestParams
   ): RequestParams {
     return {
       ...this.baseApiParams,
@@ -186,7 +188,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }
 
   protected createAbortSignal = (
-    cancelToken: CancelToken,
+    cancelToken: CancelToken
   ): AbortSignal | undefined => {
     if (this.abortControllers.has(cancelToken)) {
       const abortController = this.abortControllers.get(cancelToken);
@@ -232,7 +234,9 @@ export class HttpClient<SecurityDataType = unknown> {
     const responseFormat = format || requestParams.format;
 
     return this.customFetch(
-      `${baseUrl || this.baseUrl || ""}${path}${queryString ? `?${queryString}` : ""}`,
+      `${baseUrl || this.baseUrl || ""}${path}${
+        queryString ? `?${queryString}` : ""
+      }`,
       {
         ...requestParams,
         headers: {
@@ -249,7 +253,7 @@ export class HttpClient<SecurityDataType = unknown> {
           typeof body === "undefined" || body === null
             ? null
             : payloadFormatter(body),
-      },
+      }
     ).then(async (response) => {
       const r = response.clone() as HttpResponse<T, E>;
       r.data = null as unknown as T;
@@ -292,7 +296,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * Fitbit provides a Web API for accessing data from Fitbit activity trackers, Aria scale, and manually entered logs. Anyone can develop an application to access and modify a Fitbit user's data on their behalf, so long as it complies with Fitbit Platform Terms of Service. These Swagger UI docs do not currently support making Fitbit API requests directly. In order to make a request, construct a request for the appropriate endpoint using this documentation, and then add an Authorization header to each request with an access token obtained using the steps outlined here: https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/.
  */
 export class Api<
-  SecurityDataType extends unknown,
+  SecurityDataType extends unknown
 > extends HttpClient<SecurityDataType> {
   oauth2 = {
     /**
@@ -320,7 +324,7 @@ export class Api<
         /** Required if specified in the redirect uri of the authorization page. Must be an exact match. */
         state?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -353,7 +357,7 @@ export class Api<
         /** The access token or refresh token to be revoked */
         token: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/oauth2/revoke`,
@@ -379,7 +383,7 @@ export class Api<
         /** OAuth 2.0 token to retrieve the state of */
         token: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1.1/oauth2/introspect`,
@@ -437,7 +441,7 @@ export class Api<
     getAzmByDateIntraday: (
       date: string,
       detailLevel: "1min" | "5min" | "15min",
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/active-zone-minutes/date/${date}/1d/${detailLevel}.json`,
@@ -460,7 +464,7 @@ export class Api<
       detailLevel: "1min" | "5min" | "15min",
       startTime: string,
       endTime: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/active-zone-minutes/date/${date}/1d/${detailLevel}/time/${startTime}/${endTime}.json`,
@@ -482,7 +486,7 @@ export class Api<
       startDate: string,
       endDate: string,
       detailLevel: "1min" | "5min" | "15min",
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/active-zone-minutes/date/${startDate}/${endDate}/${detailLevel}.json`,
@@ -506,7 +510,7 @@ export class Api<
       detailLevel: "1min" | "5min" | "15min",
       startTime: string,
       endTime: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/active-zone-minutes/date/${startDate}/${endDate}/time/${startTime}/${endTime}.json`,
@@ -527,7 +531,7 @@ export class Api<
     getAzmTimeSeriesByDate: (
       date: string,
       period: "1d" | "7d" | "30d" | "1w" | "1m" | "3m" | "6m" | "1y",
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/active-zone-minutes/date/${date}/${period}.json`,
@@ -548,7 +552,7 @@ export class Api<
     getAzmTimeSeriesByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/active-zone-minutes/date/${startDate}/${endDate}.json`,
@@ -587,6 +591,7 @@ export class Api<
         path: `/1/user/-/activities/date/${date}.json`,
         method: "GET",
         secure: true,
+        format: "json",
         ...params,
       }),
 
@@ -614,7 +619,7 @@ export class Api<
         | "activityCalories",
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${resourcePath}/date/${baseDate}/${endDate}.json`,
@@ -647,7 +652,7 @@ export class Api<
         | "activityCalories",
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/tracker/${resourcePath}/date/${baseDate}/${endDate}.json`,
@@ -680,7 +685,7 @@ export class Api<
         | "activityCalories",
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${resourcePath}/date/${date}/${period}.json`,
@@ -713,7 +718,7 @@ export class Api<
         | "activityCalories",
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/tracker/${resourcePath}/date/${date}/${period}.json`,
@@ -736,7 +741,7 @@ export class Api<
       baseDate: string,
       endDate: string,
       detailLevel: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${resourcePath}/date/${baseDate}/${endDate}/${detailLevel}.json`,
@@ -758,7 +763,7 @@ export class Api<
       resourcePath: "calories" | "steps" | "distance" | "floors" | "elevation",
       date: string,
       detailLevel: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${resourcePath}/date/${date}/1d/${detailLevel}.json`,
@@ -783,7 +788,7 @@ export class Api<
       detailLevel: string,
       startTime: string,
       endTime: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${resourcePath}/date/${date}/${endDate}/${detailLevel}/time/${startTime}/${endTime}.json`,
@@ -807,7 +812,7 @@ export class Api<
       detailLevel: string,
       startTime: string,
       endTime: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${resourcePath}/date/${date}/1d/${detailLevel}/time/${startTime}/${endTime}.json`,
@@ -847,7 +852,7 @@ export class Api<
         /** Distance measurement unit. Steps units are available only for Walking (activityId=90013) and Running (activityId=90009) directory activities and their intensity levels. */
         distanceUnit?: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities.json`,
@@ -922,7 +927,7 @@ export class Api<
         /** The maximum number of entries returned (maximum;100). */
         limit: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -957,7 +962,7 @@ export class Api<
               distanceUnit: string;
               steps: number;
               startTime: string;
-            },
+            }
           ];
           pagination: {
             beforeDate: string;
@@ -991,7 +996,7 @@ export class Api<
         /** Include TCX points regardless of GPS data being present */
         includePartialTCX?: boolean;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/${logId}.tcx`,
@@ -1097,7 +1102,7 @@ export class Api<
      */
     deleteFavoriteActivities: (
       activityId: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/favorite/${activityId}.json`,
@@ -1157,7 +1162,7 @@ export class Api<
         /** goal value */
         value: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/goals/${period}.json`,
@@ -1196,7 +1201,7 @@ export class Api<
     getBodyFatByDatePeriod: (
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/fat/date/${date}/${period}.json`,
@@ -1217,7 +1222,7 @@ export class Api<
     getBodyFatByDateRange: (
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/fat/date/${baseDate}/${endDate}.json`,
@@ -1247,7 +1252,7 @@ export class Api<
         /** Time of the measurement in hours and minutes in the format HH:mm:ss that is set to the last second of the day if not provided. */
         time: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/fat.json`,
@@ -1305,7 +1310,7 @@ export class Api<
         /** Target body fat percentage; in the format X.XX. */
         fat: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/fat/goal.json`,
@@ -1333,7 +1338,7 @@ export class Api<
         /** Weight goal target weight; in the format X.XX, in the unit systems that corresponds to the Accept-Language header provided; required if user doesn't have an existing weight goal. */
         weight?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/weight/goal.json`,
@@ -1372,7 +1377,7 @@ export class Api<
     getWeightByDatePeriod: (
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/weight/date/${date}/${period}.json`,
@@ -1393,7 +1398,7 @@ export class Api<
     getWeightByDateRange: (
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/weight/date/${baseDate}/${endDate}.json`,
@@ -1423,7 +1428,7 @@ export class Api<
         /** Time of the measurement; hours and minutes in the format of HH:mm:ss, which is set to the last second of the day if not provided. */
         time?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/log/weight.json`,
@@ -1463,7 +1468,7 @@ export class Api<
       resourcePath: "bmi" | "fat" | "weight",
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/${resourcePath}/date/${date}/${period}.json`,
@@ -1485,7 +1490,7 @@ export class Api<
       resourcePath: "bmi" | "fat" | "weight",
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/body/${resourcePath}/date/${baseDate}/${endDate}.json`,
@@ -1523,7 +1528,7 @@ export class Api<
     getBreathingRateSummaryByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/br/date/${startDate}/${endDate}.json`,
@@ -1543,7 +1548,7 @@ export class Api<
      */
     getBreathingRateIntradayByDate: (
       date: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/br/date/${date}/all.json`,
@@ -1564,7 +1569,7 @@ export class Api<
     getBreathingRateIntradayByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/br/date/${startDate}/${endDate}/all.json`,
@@ -1602,7 +1607,7 @@ export class Api<
     getVo2MaxSummaryByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/cardioscore/date/${startDate}/${endDate}.json`,
@@ -1666,7 +1671,7 @@ export class Api<
         /** Comma separated list of days of the week on which the alarm vibrates, e.g. MONDAY, TUESDAY. */
         weekDays: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/devices/tracker/${trackerId}/alarms.json`,
@@ -1702,7 +1707,7 @@ export class Api<
         /** Maximum snooze count. */
         snoozeCount: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/devices/tracker/${trackerId}/alarms/${alarmId}.json`,
@@ -1724,7 +1729,7 @@ export class Api<
     deleteAlarms: (
       trackerId: number,
       alarmId: number,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/devices/tracker/${trackerId}/alarms/${alarmId}.json`,
@@ -1764,7 +1769,7 @@ export class Api<
         /** The maximum number of entries returned (maximum;10). */
         limit: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/ecg/list.json`,
@@ -1786,7 +1791,7 @@ export class Api<
     getHeartByDatePeriod: (
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/heart/date/${date}/${period}.json`,
@@ -1807,7 +1812,7 @@ export class Api<
     getHeartByDateRange: (
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/heart/date/${baseDate}/${endDate}.json`,
@@ -1829,7 +1834,7 @@ export class Api<
       date: string,
       endDate: string,
       detailLevel: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/heart/date/${date}/${endDate}/${detailLevel}.json`,
@@ -1853,7 +1858,7 @@ export class Api<
       detailLevel: string,
       startTime: string,
       endTime: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/heart/date/${date}/${endDate}/${detailLevel}/time/${startTime}/${endTime}.json`,
@@ -1874,7 +1879,7 @@ export class Api<
     getHeartByDateIntraday: (
       date: string,
       detailLevel: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/heart/date/${date}/1d/${detailLevel}.json`,
@@ -1897,7 +1902,7 @@ export class Api<
       detailLevel: string,
       startTime: string,
       endTime: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/activities/heart/date/${date}/1d/${detailLevel}/time/${startTime}/${endTime}.json`,
@@ -1935,7 +1940,7 @@ export class Api<
     getHrvSummaryInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/hrv/date/${startDate}/${endDate}.json`,
@@ -1973,7 +1978,7 @@ export class Api<
     getHrvIntradayByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/hrv/date/${startDate}/${endDate}/all.json`,
@@ -2013,7 +2018,7 @@ export class Api<
         /** The maximum number of entries returned (maximum;10). */
         limit: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/irn/alerts/list.json`,
@@ -2092,7 +2097,7 @@ export class Api<
         /** Food plan type; true or false. */
         personalized?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/goal.json`,
@@ -2167,7 +2172,7 @@ export class Api<
         /** The target water goal in the format X.X is set in unit based on locale. */
         target: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/water/goal.json`,
@@ -2190,7 +2195,7 @@ export class Api<
       resourcePath: "caloriesIn" | "water",
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/${resourcePath}/date/${baseDate}/${endDate}.json`,
@@ -2212,7 +2217,7 @@ export class Api<
       resourcePath: "caloriesIn" | "water",
       date: string,
       period: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/${resourcePath}/date/${date}/${period}.json`,
@@ -2254,7 +2259,7 @@ export class Api<
         /** Calories for this serving size. This is allowed with foodName parameter (default to zero); otherwise it is ignored. */
         calories?: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log.json`,
@@ -2302,7 +2307,7 @@ export class Api<
         /** Calories for this serving size. This is allowed with foodName parameter (default to zero); otherwise it is ignored. */
         calories?: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/${foodLogId}.json`,
@@ -2333,7 +2338,7 @@ export class Api<
         /** Water measurement unit; `ml`, `fl oz`, or `cup`. */
         unit?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/water.json`,
@@ -2377,7 +2382,7 @@ export class Api<
         /** Water measurement unit. 'ml', 'fl oz', or 'cup'. */
         unit?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods/log/water/${waterLogId}.json`,
@@ -2568,7 +2573,7 @@ export class Api<
         /** The description of the food. */
         description?: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/foods.json`,
@@ -2643,7 +2648,7 @@ export class Api<
         /** The URL-encoded search query. */
         query: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/foods/search.json`,
@@ -2682,7 +2687,7 @@ export class Api<
     getSpO2SummaryByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/spo2/date/${startDate}/${endDate}.json`,
@@ -2720,7 +2725,7 @@ export class Api<
     getSpO2IntradayByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/spo2/date/${startDate}/${endDate}/all.json`,
@@ -2740,7 +2745,7 @@ export class Api<
      */
     getSubscriptionsList: (
       collectionPath: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/${collectionPath}/apiSubscriptions.json`,
@@ -2761,7 +2766,7 @@ export class Api<
     addSubscriptions: (
       collectionPath: string,
       subscriptionId: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/${collectionPath}/apiSubscriptions/${subscriptionId}.json`,
@@ -2782,7 +2787,7 @@ export class Api<
     deleteSubscriptions: (
       collectionPath: string,
       subscriptionId: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/${collectionPath}/apiSubscriptions/${subscriptionId}.json`,
@@ -2820,7 +2825,7 @@ export class Api<
     getTempCoreSummaryByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/temp/core/date/${startDate}/${endDate}.json`,
@@ -2858,7 +2863,7 @@ export class Api<
     getTempSkinSummaryByInterval: (
       startDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1/user/-/temp/skin/date/${startDate}/${endDate}.json`,
@@ -2948,7 +2953,7 @@ export class Api<
     getSleepByDateRange: (
       baseDate: string,
       endDate: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1.2/user/-/sleep/date/${baseDate}/${endDate}.json`,
@@ -2988,7 +2993,7 @@ export class Api<
         /** The maximum number of entries returned (maximum;100). */
         limit: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1.2/user/-/sleep/list.json`,
@@ -3029,7 +3034,7 @@ export class Api<
         /** Duration of sleep goal. */
         minDuration: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1.2/user/-/sleep/goal.json`,
@@ -3060,7 +3065,7 @@ export class Api<
          */
         date: string;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<void, void>({
         path: `/1.2/user/-/sleep.json`,
