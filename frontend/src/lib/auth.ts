@@ -161,16 +161,17 @@ export const authOptions: NextAuthOptions = {
         try {
           const client = await prisma.client.findUnique({
             where: { authId: token.sub },
-            select: { roles: true },
+            select: { roles: true, avatarUrl: true },
           });
 
           if (client) {
             session.user.roles = client.roles;
+            session.user.image = client.avatarUrl;
           } else {
             session.user.roles = [];
           }
         } catch (error) {
-          console.error("Error fetching user roles:", error);
+          console.error("Error fetching user data for session:", error);
           session.user.roles = [];
         }
       }

@@ -37,7 +37,7 @@ import { useChat, type UIMessage } from "@ai-sdk/react";
 import * as ToolManager from "@/utils/ai/langchain/toolManager/toolManager";
 import { useAuth } from "@/hooks/use-auth";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
-import { type FormEventHandler, useCallback, useState } from "react";
+import { type FormEventHandler, useCallback, useEffect, useState } from "react";
 import { LLMType } from "@/utils/ai/types";
 import { DefaultChatTransport } from "ai";
 import { useQuery } from "@tanstack/react-query";
@@ -65,6 +65,10 @@ export function AIChatConversation({
   selectedClient?: ClientForTrainer;
 }) {
   const { user } = useAuth();
+  useEffect(() => {
+    console.log(JSON.stringify(user, null, 2));
+  }, [user]);
+
   const [inputValue, setInputValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<LLMType>(models[0].id);
   const [selectedPrompt, setSelectedPrompt] = useState<string | undefined>();
@@ -241,9 +245,7 @@ export function AIChatConversation({
                         ? user?.image || "/images/bene-fit.jpeg"
                         : "/images/bene-fit.jpeg"
                     }
-                    name={
-                      message.role === "user" ? user?.name || "User" : "AI"
-                    }
+                    name={message.role === "user" ? user?.name || "User" : "AI"}
                   />
                 </Message>
               </div>
