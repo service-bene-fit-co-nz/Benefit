@@ -201,51 +201,53 @@ export function AIChatConversation({
       {/* Conversation Area */}
       <Conversation className="flex-1">
         <ConversationContent className="space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className="space-y-3">
-              <Message from={message.role}>
-                <MessageContent>
+          {messages
+            .filter((m) => m.role !== "system")
+            .map((message) => (
+              <div key={message.id} className="space-y-3">
+                <Message from={message.role}>
                   <MessageContent>
-                    {message.parts?.map((part, i) => {
-                      switch (part.type) {
-                        case "text":
+                    {message.role === "assistant" &&
+                    !message.parts.some(
+                      (part) => part.type === "text" && part.text.length > 0
+                    ) ? (
+                      <div className="flex items-center gap-2">
+                        <Loader size={14} />
+                        <span className="text-muted-foreground text-sm">
+                          Thinking...
+                        </span>
+                      </div>
+                    ) : (
+                      message.parts?.map((part, i) => {
+                        if (part.type === "text") {
+                          if (message.role === "assistant") {
+                            return (
+                              <Response key={`${message.id}-${i}`}>
+                                {part.text}
+                              </Response>
+                            );
+                          }
                           return (
-                            <Response key={`${message.id}-${i}`}>
-                              {part.text}
-                            </Response>
+                            <div key={`${message.id}-${i}`}>{part.text}</div>
                           );
-                        default:
-                          return null;
-                      }
-                    })}
+                        }
+                        return null;
+                      })
+                    )}
                   </MessageContent>
-                </MessageContent>
-                <MessageAvatar
-                  src={
-                    message.role === "user"
-                      ? user?.image || "/images/bene-fit.jpeg"
-                      : "/images/bene-fit.jpeg"
-                  }
-                  name={message.role === "user" ? user?.name || "User" : "AI"}
-                />
-              </Message>
-            </div>
-          ))}
-          {isThinking && (
-            <div className="space-y-3">
-              <Message from="assistant">
-                <MessageContent>
-                  <div className="flex items-center gap-2">
-                    <Loader size={14} />
-                    <span className="text-muted-foreground text-sm">
-                      Thinking...
-                    </span>
-                  </div>
-                </MessageContent>
-                <MessageAvatar src="/images/bene-fit.jpeg" name="AI" />
-              </Message>
-            </div>
-          )}
+                  <MessageAvatar
+                    src={
+                      message.role === "user"
+                        ? user?.image || "/images/bene-fit.jpeg"
+                        : "/images/bene-fit.jpeg"
+                    }
+                    name={
+                      message.role === "user" ? user?.name || "User" : "AI"
+                    }
+                  />
+                </Message>
+              </div>
+            ))}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
