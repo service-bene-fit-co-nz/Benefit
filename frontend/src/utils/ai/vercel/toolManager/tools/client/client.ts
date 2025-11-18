@@ -3,7 +3,10 @@
 import { z } from "zod";
 import { tool } from "ai";
 import { fetchClientById } from "@/server-actions/trainer/clients/actions";
-import { fetchClientNotes, createClientNote } from "@/server-actions/client/notes/actions";
+import {
+  fetchClientNotes,
+  createClientNote,
+} from "@/server-actions/client/notes/actions";
 import { ClientNoteType } from "@prisma/client";
 import { findClientByName } from "@/server-actions/client/actions";
 import { readAllClients } from "@/server-actions/admin/clients/actions";
@@ -246,8 +249,7 @@ const SaveClientNoteInputSchema = z.object({
 // 6. saveClientNote Tool
 // ------------------------------------
 export const saveClientNoteTool = tool({
-  description:
-    `Saves a new note for a client. The LLM should always confirm the data for noteMetadata and formData with the user before proceeding. Only trainer notes can be stored using 
+  description: `Saves a new note for a client. The LLM should always confirm the data for noteMetadata and formData with the user before proceeding. Only trainer notes can be stored using 
     this function. 
     noteMetaData field should include a title field and and author as part of the json
     formData field should include the note test in a json parameter called content
@@ -285,4 +287,67 @@ export const saveClientNoteTool = tool({
   },
 });
 
+// ------------------------------------
+// 6. deleteClientNote Tool
+// ------------------------------------
+export const deleteClientNoteTool = tool({
+  description: `
+    `,
+  inputSchema: SaveClientNoteInputSchema,
+  execute: async ({
+    clientId,
+    noteType,
+    noteMetadata,
+    formData,
+  }: z.infer<typeof SaveClientNoteInputSchema>) => {
+    try {
+      const newNote = await createClientNote(
+        clientId,
+        noteType,
+        noteMetadata,
+        formData
+      );
 
+      return {
+        status: "success",
+        message: "Client note saved successfully.",
+        noteId: newNote.id,
+      };
+    } catch (error: unknown) {
+      console.error("Error saving client note:", error);
+      return {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while saving the client note.",
+      };
+    }
+  },
+});
+
+// ------------------------------------
+// 6. getCurrentDateAndTime Tool
+// ------------------------------------
+export const getCurrentDateAndTimeTool = tool({
+  description: `
+    Returns the current date and time in ISO 8601 format.
+    `,
+  inputSchema: z.object({}),
+  execute: async () => {
+    try {
+      const currentDateAndTime = new Date().toISOString();
+      return {
+        status: "success",
+        dateAndTime: currentDateAndTime,
+      };
+    } catch (error: unknown) {
+      console.error("Error getting current date and time:", error);
+      return {
+        error:
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred while getting the current date and time.",
+      };
+    }
+  },
+});

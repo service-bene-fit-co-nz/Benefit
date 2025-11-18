@@ -114,22 +114,22 @@ const menuDefinition: NavData = {
         },
       ],
     },
-    {
-      title: "Experimental",
-      url: "/dashboard/experimental",
-      icon: "FlaskConical",
-      roles: ["SystemAdmin"], // Only SystemAdmin
-      items: [
-        {
-          title: "Chatbot",
-          url: "/dashboard/experimental/chatbot",
-        },
-        {
-          title: "Habits",
-          url: "/dashboard/experimental/habits",
-        },
-      ],
-    },
+    // {
+    //   title: "Experimental",
+    //   url: "/dashboard/experimental",
+    //   icon: "FlaskConical",
+    //   roles: ["SystemAdmin"], // Only SystemAdmin
+    //   items: [
+    //     {
+    //       title: "Chatbot",
+    //       url: "/dashboard/experimental/chatbot",
+    //     },
+    //     {
+    //       title: "Habits",
+    //       url: "/dashboard/experimental/habits",
+    //     },
+    //   ],
+    // },
   ],
 };
 

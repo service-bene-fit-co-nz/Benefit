@@ -10,11 +10,13 @@ import {
 
 import { getClientDetailsTool } from "@/utils/ai/vercel/toolManager/tools/client/client";
 import {
-  getClientNotesTool,  
+  getClientNotesTool,
   getAllClientsTool,
   getRawFitbitDataTool,
   saveClientNoteTool,
+  getCurrentDateAndTimeTool,
 } from "@/utils/ai/vercel/toolManager/tools/client/client";
+import { sqlQueryTool } from "@/utils/ai/vercel/toolManager/tools/db/prisma";
 
 export async function POST(req: Request) {
   const {
@@ -52,12 +54,14 @@ export async function POST(req: Request) {
     model: model,
     system: "You are a helpful assistant.",
     messages: convertToModelMessages(messages),
-    tools: {      
+    tools: {
       getAllClients: getAllClientsTool,
       getClientDetails: getClientDetailsTool,
       getClientNotes: getClientNotesTool,
       getRawFitbitData: getRawFitbitDataTool,
-      saveClientNote: saveClientNoteTool
+      saveClientNote: saveClientNoteTool,
+      getCurrentDateAndTime: getCurrentDateAndTimeTool,
+      sqlQuery: sqlQueryTool,
     },
     stopWhen: stepCountIs(5),
   });

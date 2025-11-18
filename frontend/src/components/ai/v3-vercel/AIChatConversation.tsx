@@ -49,6 +49,7 @@ import {
   readAllClients,
   type ClientSearchResult,
 } from "@/server-actions/admin/clients/actions";
+import { getPrismaSchemaContext } from "@/server-actions/ai/actions";
 
 const models: { id: LLMType; name: string }[] = [
   { id: "Gemini", name: "Gemini" },
@@ -81,6 +82,11 @@ export function AIChatConversation({
     queryFn: () => readAllClients(),
   });
 
+  const { data: dbContext, isLoading: dbContextLoading } = useQuery({
+    queryKey: ["prismaSchemaContext"],
+    queryFn: () => getPrismaSchemaContext(),
+  });
+
   const clients = clientsResult?.success ? clientsResult.data : [];
 
   const systemContext =
@@ -90,7 +96,7 @@ export function AIChatConversation({
     {
       id: "system-context", // A unique ID
       role: "system",
-      parts: [{ type: "text", text: systemContext }],
+      parts: [{ type: "text", text: systemContext + "\n\n" + (dbContext ?? "") }],
       // Note: The system message content is usually not rendered in the UI,
       // but its role is to instruct the model on the backend.
     },
@@ -107,10 +113,6 @@ export function AIChatConversation({
 
   const handleModelChange = (modelId: LLMType) => {
     setSelectedModel(modelId);
-  };
-
-  const handleClientChange = (clientId: string) => {
-    setSelectedClientId(clientId);
   };
 
   const handlePromptChange = (promptId: string) => {
@@ -142,7 +144,7 @@ export function AIChatConversation({
     (status as string) === "streaming-final-response";
 
   const isAnythingLoading: boolean =
-    isLoading || promptsLoading || clientsLoading;
+    isLoading || promptsLoading || clientsLoading || dbContextLoading;
 
   const body: any = {
     selectedModel: selectedModel,
@@ -276,19 +278,6 @@ export function AIChatConversation({
                 <UserRoundCheck size={16} />
               </PromptInputButton> 
               */}
-              <Combobox
-                options={
-                  clients?.map((client) => ({
-                    value: client.id,
-                    label: `${client.firstName} ${client.lastName}`,
-                  })) || []
-                }
-                value={selectedClientId}
-                onValueChange={handleClientChange}
-                placeholder="Select a client"
-                disabled={isAnythingLoading}
-                className="w-[180px]"
-              />
               <Combobox
                 options={
                   prompts?.map((prompt) => ({
