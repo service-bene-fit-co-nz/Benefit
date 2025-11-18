@@ -96,9 +96,9 @@ export function AIChatConversation({
     {
       id: "system-context", // A unique ID
       role: "system",
-      parts: [{ type: "text", text: systemContext + "\n\n" + (dbContext ?? "") }],
-      // Note: The system message content is usually not rendered in the UI,
-      // but its role is to instruct the model on the backend.
+      parts: [
+        { type: "text", text: systemContext + "\n\n" + (dbContext ?? "") },
+      ],
     },
   ];
 
@@ -122,7 +122,9 @@ export function AIChatConversation({
       const newSystemMessage: UIMessage = {
         id: "system-context",
         role: "system",
-        parts: [{ type: "text", text: selected.prompt }],
+        parts: [
+          { type: "text", text: selected.prompt + "\n\n" + (dbContext ?? "") },
+        ],
       };
       setMessages((currentMessages) => {
         const systemMessageIndex = currentMessages.findIndex(
@@ -203,27 +205,20 @@ export function AIChatConversation({
             <div key={message.id} className="space-y-3">
               <Message from={message.role}>
                 <MessageContent>
-                  {message.parts.map((part, index) => {
-                    // 1. Check if the part is a TextUIPart (type: 'text')
-                    if (part.type === "text") {
-                      const textContent = (
-                        <Response key={index}>{part.text}</Response>
-                      );
-
-                      // 2. Apply the <Response> wrapper only for the 'assistant'
-                      return message.role === "assistant"
-                        ? textContent
-                        : part.text;
-                    }
-
-                    // 3. Add logic here to handle other parts (tool calls, data, etc.)
-                    // Example:
-                    // if (part.type === 'tool') {
-                    //   return <ToolCallRenderer key={index} tool={part.tool} />;
-                    // }
-
-                    return null; // Ignore unsupported parts for now
-                  })}
+                  <MessageContent>
+                    {message.parts?.map((part, i) => {
+                      switch (part.type) {
+                        case "text":
+                          return (
+                            <Response key={`${message.id}-${i}`}>
+                              {part.text}
+                            </Response>
+                          );
+                        default:
+                          return null;
+                      }
+                    })}
+                  </MessageContent>
                 </MessageContent>
                 <MessageAvatar
                   src={
@@ -266,11 +261,10 @@ export function AIChatConversation({
           />
           <PromptInputToolbar>
             <PromptInputTools>
-              {/* 
               <PromptInputButton disabled={isAnythingLoading}>
                 <PaperclipIcon size={16} />
               </PromptInputButton>
-              <PromptInputButton disabled={isAnythingLoading}>
+              {/*<PromptInputButton disabled={isAnythingLoading}>
                 <MicIcon size={16} />
                 <span>Voice</span>
               </PromptInputButton>
