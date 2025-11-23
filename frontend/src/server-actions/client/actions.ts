@@ -9,6 +9,7 @@ import { randomUUID } from "crypto";
 
 import { Client, ContactInfoItem } from "./types";
 import { z } from "zod";
+import { convertDecimalToString } from "@/lib/decimal-convert";
 
 // Zod schema for a single contact information item
 const ContactInfoItemSchema = z.object({
@@ -340,7 +341,7 @@ export async function findClientByName(name: {
 
     return {
       success: true,
-      data: clients,
+      data: convertDecimalToString(clients),
     };
   } catch (err: any) {
     console.error(err);
@@ -406,9 +407,13 @@ export async function fetchClientWithAllData(
       };
     }
 
+    const convertedClient = convertDecimalToString(client);
+
+    console.log("Converted Client Data:", JSON.stringify(convertedClient, null, 2));
+
     return {
       success: true,
-      data: client,
+      data: convertedClient,
     };
   } catch (err: any) {
     console.error("Error fetching client with all data:", err);
