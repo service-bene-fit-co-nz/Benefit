@@ -209,7 +209,8 @@ export async function updateClient(
           authId: true,
         },
       });
-    } else {
+    }
+    else {
       // CREATE logic
       updatedOrCreatedRecord = await prisma.client.create({
         data: {
@@ -349,6 +350,78 @@ export async function findClientByName(name: {
         err.message || "Unknown error"
       }`,
       code: "UNEXPECTED_SERVER_ERROR",
+    };
+  }
+}
+
+const clientWithAllDataArgs = Prisma.validator<Prisma.ClientDefaultArgs>()({
+  include: {
+    programmeEnrolments: {
+      include: {
+        programme: true,
+        transactions: true,
+      },
+    },
+    transactions: true,
+    clientNotes: true,
+    programmeHabits: {
+      include: {
+        programmeHabit: {
+          include: {
+            habit: true,
+            programme: true,
+          },
+        },
+      },
+    },
+  },
+});
+
+export type ClientWithAllData = Prisma.ClientGetPayload<
+  typeof clientWithAllDataArgs
+>;
+
+export async function fetchClientWithAllData(
+  authId: string
+): Promise<ActionResult<ClientWithAllData>> {
+  if (typeof authId !== "string" || authId.trim() === "") {
+    return {
+      success: false,
+      message: "Invalid client ID provided.",
+      code: "INVALID_CLIENT_ID",
+    };
+  }
+
+  try {
+    const client = await prisma.client.findUnique({
+      where: { authId: authId },
+      ...clientWithAllDataArgs,
+    });
+
+    if (!client) {
+      return {
+        success: false,
+        message: `Client with AUTH ID ${authId} not found.`,
+        code: "CLIENT_NOT_FOUND",
+      };
+    }
+
+    return {
+      success: true,
+      data: client,
+    };
+  } catch (err: any) {
+    console.error("Error fetching client with all data:", err);
+    return {
+      success: false,
+      message: `An unexpected server error occurred: ${
+        err.message || "Unknown error"
+      }`,
+      code: "UNEXPECTED_SERVER_ERROR",
+      details:
+        process.env.NODE_ENV === "development"
+          ? { stack: err.stack }
+          : undefined,
     };
   }
 }

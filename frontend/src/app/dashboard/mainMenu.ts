@@ -16,6 +16,10 @@ const menuDefinition: NavData = {
       roles: ["SystemAdmin", "Admin", "Client"], // All authenticated users
       items: [
         {
+          title: "AI",
+          url: "/dashboard/client/ai",
+        },
+        {
           title: "Profile",
           url: "/dashboard/client/profile",
         },
@@ -44,30 +48,30 @@ const menuDefinition: NavData = {
       icon: "Users",
       roles: ["SystemAdmin", "Admin"],
       items: [
-        // {
-        //   title: "AI",
-        //   url: "/dashboard/trainer/ai",
-        // },
         {
           title: "AI",
-          url: "/dashboard/trainer/vercel",
+          url: "/dashboard/trainer/ai",
         },
-        // {
-        //   title: "Check In",
-        //   url: "/dashboard/trainer/checkin",
-        // },
-        // {
-        //   title: "Clients",
-        //   url: "/dashboard/trainer/clients",
-        // },
-        // {
-        //   title: "Summary",
-        //   url: "/dashboard/trainer/summary",
-        // },
-        // {
-        //   title: "Summary old",
-        //   url: "/dashboard/trainer/summary-old",
-        // },
+        {
+          title: "Check In",
+          url: "/dashboard/trainer/checkin",
+          isDisabled: true,
+        },
+        {
+          title: "Clients",
+          url: "/dashboard/trainer/clients",
+          isDisabled: true,
+        },
+        {
+          title: "Summary",
+          url: "/dashboard/trainer/summary",
+          isDisabled: true,
+        },
+        {
+          title: "Summary old",
+          url: "/dashboard/trainer/summary-old",
+          isDisabled: true,
+        },
         {
           title: "Programmes",
           url: "/dashboard/trainer/programmes",

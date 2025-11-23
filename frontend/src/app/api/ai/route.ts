@@ -17,13 +17,20 @@ import {
   getCurrentDateAndTimeTool,
 } from "@/utils/ai/vercel/toolManager/tools/client/client";
 import { sqlQueryTool } from "@/utils/ai/vercel/toolManager/tools/db/prisma";
+import * as ToolManager from "@/utils/ai/vercel/toolManager/toolManager";
 
 export async function POST(req: Request) {
   const {
     messages,
     selectedModel,
-  }: { messages: UIMessage[]; selectedModel?: "Gemini" | "ChatGPT" | "Groq" } =
-    await req.json();
+    tools,
+  }: {
+    messages: UIMessage[];
+    selectedModel?: "Gemini" | "ChatGPT" | "Groq";
+    tools: ToolManager.ToolType[];
+  } = await req.json();
+
+  console.log("Requested tools:", JSON.stringify(tools, null, 2));
 
   let model;
   switch (selectedModel) {
@@ -45,24 +52,13 @@ export async function POST(req: Request) {
       break;
   }
 
-  console.log(
-    "OpenAI Key Status:",
-    process.env.OPENAI_API_KEY ? "Loaded" : "MISSING"
-  );
+  const llmTools = ToolManager.getTools(tools);
 
   const result = streamText({
     model: model,
     system: "You are a helpful assistant.",
     messages: convertToModelMessages(messages),
-    tools: {
-      getAllClients: getAllClientsTool,
-      getClientDetails: getClientDetailsTool,
-      getClientNotes: getClientNotesTool,
-      getRawFitbitData: getRawFitbitDataTool,
-      saveClientNote: saveClientNoteTool,
-      getCurrentDateAndTime: getCurrentDateAndTimeTool,
-      sqlQuery: sqlQueryTool,
-    },
+    tools: llmTools,
     stopWhen: stepCountIs(5),
   });
 
