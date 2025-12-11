@@ -89,6 +89,10 @@ const menuDefinition: NavData = {
           url: "/dashboard/admin/email",
         },
         {
+          title: "Chat",
+          url: "/dashboard/admin/chat",
+        },
+        {
           title: "Habits",
           url: "/dashboard/admin/habits",
         },

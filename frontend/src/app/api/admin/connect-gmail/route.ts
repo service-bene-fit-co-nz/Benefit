@@ -10,16 +10,27 @@ const GOOGLE_GMAIL_CLIENT_REDIRECT_URI =
   process.env.GOOGLE_GMAIL_CLIENT_REDIRECT_URI!; // This is your /api/admin/connect-gmail/callback URL
 
 // Add logging for environment variables
-console.log('[Gmail OAuth] GOOGLE_GMAIL_CLIENT_ID:', GOOGLE_GMAIL_CLIENT_ID ? 'set' : 'not set');
-console.log('[Gmail OAuth] GOOGLE_GMAIL_CLIENT_SECRET:', GOOGLE_GMAIL_CLIENT_SECRET ? 'set' : 'not set');
-console.log('[Gmail OAuth] GOOGLE_GMAIL_CLIENT_REDIRECT_URI:', GOOGLE_GMAIL_CLIENT_REDIRECT_URI);
-
+console.log(
+  "[Gmail OAuth] GOOGLE_GMAIL_CLIENT_ID:",
+  GOOGLE_GMAIL_CLIENT_ID ? "set" : "not set"
+);
+console.log(
+  "[Gmail OAuth] GOOGLE_GMAIL_CLIENT_SECRET:",
+  GOOGLE_GMAIL_CLIENT_SECRET ? "set" : "not set"
+);
+console.log(
+  "[Gmail OAuth] GOOGLE_GMAIL_CLIENT_REDIRECT_URI:",
+  GOOGLE_GMAIL_CLIENT_REDIRECT_URI
+);
 
 // Define the scopes needed for your application's Gmail access
 const SCOPES = [
   "https://www.googleapis.com/auth/gmail.send",
   "https://www.googleapis.com/auth/gmail.readonly",
   "https://www.googleapis.com/auth/gmail.compose",
+  "https://www.googleapis.com/auth/chat.messages.readonly",
+  "https://www.googleapis.com/auth/chat.spaces.readonly",
+  //"https://www.googleapis.com/auth/chat.messages",
 ];
 
 // Initialize the OAuth2 client outside the handler for better performance
@@ -35,7 +46,9 @@ export async function GET() {
     !GOOGLE_GMAIL_CLIENT_SECRET ||
     !GOOGLE_GMAIL_CLIENT_REDIRECT_URI
   ) {
-    console.error('[Gmail OAuth] Missing critical environment variables for OAuth configuration.');
+    console.error(
+      "[Gmail OAuth] Missing critical environment variables for OAuth configuration."
+    );
     // It's good practice to redirect with an absolute URL if an error occurs here
     const redirectUrl = new URL(
       "/admin/settings",
@@ -55,7 +68,7 @@ export async function GET() {
     });
 
     // Log the generated authorization URL
-    console.log('[Gmail OAuth] Generated Authorization URL:', authorizeUrl);
+    console.log("[Gmail OAuth] Generated Authorization URL:", authorizeUrl);
 
     // Redirect the user's browser directly to Google's OAuth consent screen
     return NextResponse.redirect(authorizeUrl);

@@ -11,7 +11,9 @@
     "postinstall": "prisma generate",
     "seed": "tsx prisma/seed.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset && tsx prisma/seed.ts"
+    "db:reset": "prisma migrate reset && tsx prisma/seed.ts",
+    "ngrok-tunnel": "ngrok http 3000 --domain epiglottal-nebuly-liz.ngrok-free.dev",
+    "dev:tunnel": "npx concurrently \"npm run dev\" \"npm run ngrok-tunnel\""
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.31",
