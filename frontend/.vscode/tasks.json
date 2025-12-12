@@ -2,6 +2,36 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "start ngrok",
+      "type": "shell",
+      "command": "ngrok http 3000 --domain epiglottal-nebuly-liz.ngrok-free.dev", // Adjust port 3000 if your Next.js app runs on a different port
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "problemMatcher": {
+        "pattern": [
+          {
+            "regexp": ".*",
+            "file": 1,
+            "location": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          // ngrok's output indicating it's ready:
+          "beginsPattern": "Tunnel session started on", 
+          // ngrok never 'ends' until killed, so we use a pattern it hits early
+          "endsPattern": "starting web service.*|online session established" 
+        }
+      }
+    },
+    {
       "label": "Launch Chrome for Debugging",
       "type": "shell",
       "command": "",

@@ -1,0 +1,105 @@
+"use server";
+
+import { FlatMessage, FacebookConversation } from "./types";
+
+// Define a result type for the server action
+export type DownloadHistoryResult =
+  | { success: true; data: FlatMessage[] }
+  | { success: false; error: string };
+
+/**
+ * Fetches Facebook Messenger conversation history and returns it as a flat array of messages.
+ * This action replaces the functionality of the /api/facebook/messenger/download route.
+ * @returns {Promise<DownloadHistoryResult>} A promise that resolves to an object containing either the message data or an error.
+ */
+export async function downloadMessengerHistory(): Promise<DownloadHistoryResult> {
+  // --- Configuration ---
+  // These environment variables must be defined in your .env.local file
+  const PAGE_ID = process.env.FACEBOOK_PAGE_ID;
+  const ACCESS_TOKEN = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+  const API_VERSION = process.env.FACEBOOK_API_VERSION || "v20.0";
+
+  if (!PAGE_ID || !ACCESS_TOKEN) {
+    console.error(
+      "Missing Facebook environment variables (PAGE_ID or ACCESS_TOKEN)."
+    );
+    return {
+      success: false,
+      error: "Server configuration error: Missing Facebook credentials.",
+    };
+  }
+
+  // Fields for Field Expansion: retrieves message details nested under conversations
+  const MESSAGE_FIELDS =
+    "messages{id,created_time,from,message,attachments,to}";
+  const INITIAL_API_URL = `https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/conversations?fields=${MESSAGE_FIELDS}&platform=messenger&access_token=${ACCESS_TOKEN}`;
+
+  let allMessages: FlatMessage[] = [];
+  let nextUrl: string | undefined = INITIAL_API_URL;
+
+  try {
+    // 1. Fetch Conversations and Messages with Pagination
+    while (nextUrl) {
+      const response = await fetch(nextUrl);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Facebook API Error (${response.status}): ${errorText}`);
+        return {
+          success: false,
+          error: `Facebook API Error (${response.status}): ${errorText}`,
+        };
+      }
+
+      const result: {
+        data: FacebookConversation[];
+        paging?: { next: string };
+      } = await response.json();
+
+      // 2. Process and Flatten Data
+      result.data.forEach((conversation) => {
+        const messageData = conversation.messages?.data;
+
+        if (messageData && messageData.length > 0) {
+          messageData.forEach((msg) => {
+            // Determine the recipient ID (the one that is not the sender)
+            const recipient = msg.to.data.find((p) => p.id !== msg.from.id);
+
+            allMessages.push({
+              conversation_id: conversation.id,
+              message_id: msg.id,
+              timestamp: msg.created_time,
+              sender_id: msg.from.id,
+              sender_name: msg.from.name || "User",
+              recipient_id: recipient ? recipient.id : PAGE_ID!,
+              message_text: msg.message || "",
+              has_attachments: !!msg.attachments,
+              raw_message_data: msg, // Include raw data for full context
+            });
+
+            if (msg.attachments) {
+              console.log("Message with attachment found:", JSON.stringify(msg, null, 2));
+            }
+          });
+        }
+      });
+
+      // Set up for the next page of conversations
+      nextUrl = result.paging?.next;
+    }
+
+    if (allMessages.length === 0) {
+      return { success: false, error: "No messages found in recent conversations." };
+    }
+
+    // 3. Return the data
+    return { success: true, data: allMessages };
+  } catch (error) {
+    console.error("Download Action Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "An unknown error occurred.",
+    };
+  }
+}
