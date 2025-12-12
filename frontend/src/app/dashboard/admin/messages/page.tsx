@@ -52,7 +52,7 @@ export default async function MessagesPage() {
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">Messages</h1>
       </div>
-      <div className="bg-muted/50 flex-1 rounded-xl">
+      <div className="bg-muted/50 rounded-xl">
         <MessageList messages={messages} />
       </div>
     </div>
