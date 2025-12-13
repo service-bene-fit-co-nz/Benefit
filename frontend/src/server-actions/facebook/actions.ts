@@ -19,12 +19,6 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
   const ACCESS_TOKEN = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
   const API_VERSION = process.env.FACEBOOK_API_VERSION || "v20.0";
 
-  console.log("--- DEBUGGING FACEBOOK VARS ---");
-  console.log("PAGE_ID:", PAGE_ID);
-  console.log("ACCESS_TOKEN:", ACCESS_TOKEN ? ACCESS_TOKEN : "Not Loaded");
-  console.log("API_VERSION:", API_VERSION);
-  console.log("---------------------------------");
-
   if (!PAGE_ID || !ACCESS_TOKEN) {
     console.error(
       "Missing Facebook environment variables (PAGE_ID or ACCESS_TOKEN)."
