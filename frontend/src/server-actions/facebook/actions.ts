@@ -76,10 +76,6 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
               has_attachments: !!msg.attachments,
               raw_message_data: msg, // Include raw data for full context
             });
-
-            if (msg.attachments) {
-              console.log("Message with attachment found:", JSON.stringify(msg, null, 2));
-            }
           });
         }
       });
@@ -89,7 +85,10 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
     }
 
     if (allMessages.length === 0) {
-      return { success: false, error: "No messages found in recent conversations." };
+      return {
+        success: false,
+        error: "No messages found in recent conversations.",
+      };
     }
 
     // 3. Return the data
