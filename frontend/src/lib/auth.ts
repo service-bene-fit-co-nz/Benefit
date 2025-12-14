@@ -82,6 +82,21 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
+      authorization: {
+        params: {
+          // 👈 1. ADD THE CONFIGURATION ID HERE (CRUCIAL FIX)
+          // Replace YOUR_CONFIG_ID_HERE with the ID you copied from Step 1
+          config_id: process.env.FACEBOOK_CONFIG_ID!,
+
+          // 👈 2. Add ALL permissions requested in the Configuration
+          // Example: If you added pages_show_list
+          scope: "email,public_profile,pages_messaging",
+
+          // You may also need to explicitly set response_type for Business Login flows
+          // This often helps older SDKs/providers:
+          response_type: "code",
+        },
+      },
     }),
     EmailProvider({
       from: process.env.EMAIL_FROM,
