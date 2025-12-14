@@ -43,7 +43,7 @@ function FormComponent() {
     if (!email || typeof email !== "string" || !email.includes("@")) {
       setEmailState({
         success: false,
-        message: "Please enter a valid email address.",
+        message: "* Please enter a valid email address.",
       });
       return;
     }
@@ -100,8 +100,7 @@ function FormComponent() {
           provider: "",
           pending: true,
           success: true,
-          message: `Logging in via ${provider.charAt(0).toUpperCase() + provider.slice(1)
-            }...`,
+          message: "", // Removed the "Logging in via..." message
         });
       }
     } catch (error) {
@@ -125,6 +124,17 @@ function FormComponent() {
           <Label htmlFor="email" className="text-sm font-medium text-foreground">
             Email Address
           </Label>
+          {/* Email Status Message */}
+          {emailState.message && (
+            <p
+              className={`text-sm ${emailState.success
+                  ? "px-3 py-2 rounded-md text-green-700 bg-green-50 border border-green-200"
+                  : "font-medium text-red-400"
+                }`}
+            >
+              {emailState.message}
+            </p>
+          )}
           <Input
             id="email"
             name="email"
@@ -147,20 +157,6 @@ function FormComponent() {
             Sign in with Email
           </Button>
         </div>
-
-        {/* Email Status Message */}
-        {emailState.message && (
-          <div className="flex justify-center">
-            <p
-              className={`text-sm px-3 py-2 rounded-md ${emailState.success
-                  ? "text-green-700 bg-green-50 border border-green-200"
-                  : "text-red-700 bg-red-50 border border-red-200"
-                }`}
-            >
-              {emailState.message}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Divider */}
@@ -209,16 +205,39 @@ function FormComponent() {
       {/* OAuth Status Message */}
       {oAuthRequest.message && (
         <div className="flex justify-center mt-4">
-          <p
-            className={`text-sm px-3 py-2 rounded-md ${oAuthRequest.success
-                ? "text-blue-700 bg-blue-50 border border-blue-200"
-                : "text-red-700 bg-red-50 border border-red-200"
-              }`}
-          >
-            {oAuthRequest.message}
-          </p>
+          {oAuthRequest.success ? (
+            <p className="text-sm font-medium text-foreground">
+              {oAuthRequest.message}
+            </p>
+          ) : (
+            <p className="text-sm px-3 py-2 rounded-md text-red-700 bg-red-50 border border-red-200">
+              {oAuthRequest.message}
+            </p>
+          )}
         </div>
       )}
+
+      <CardContent className="mt-4">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">
+            Not sure what to do?{" "}
+            {pending || oAuthRequest.pending ? (
+              <span
+                className={`font-medium text-primary block mt-1 pointer-events-none opacity-50`}
+              >
+                Click here to contact us
+              </span>
+            ) : (
+              <Link
+                href="https://www.bene-fit.co.nz/contact"
+                className="font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline block mt-1"
+              >
+                Click here to contact us
+              </Link>
+            )}
+          </p>
+        </div>
+      </CardContent>
     </>
   );
 }
@@ -236,20 +255,6 @@ export function SignInCard() {
         <form>
           <FormComponent />
         </form>
-      </CardContent>
-
-      <CardContent className="pt-0">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Not sure what to do?{" "}
-            <Link
-              href="https://www.bene-fit.co.nz/contact"
-              className="font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline block mt-1"
-            >
-              Click here to contact us
-            </Link>
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
