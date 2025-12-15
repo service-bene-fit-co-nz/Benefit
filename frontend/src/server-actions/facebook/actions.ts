@@ -1,18 +1,16 @@
 "use server";
 
+import { ActionResult } from "@/types/server-action-results";
 import { FlatMessage, FacebookConversation } from "./types";
-
-// Define a result type for the server action
-export type DownloadHistoryResult =
-  | { success: true; data: FlatMessage[] }
-  | { success: false; error: string };
 
 /**
  * Fetches Facebook Messenger conversation history and returns it as a flat array of messages.
  * This action replaces the functionality of the /api/facebook/messenger/download route.
- * @returns {Promise<DownloadHistoryResult>} A promise that resolves to an object containing either the message data or an error.
+ * @returns {Promise<ActionResult<FlatMessage[]>>} A promise that resolves to an object containing either the message data or an error.
  */
-export async function downloadMessengerHistory(): Promise<DownloadHistoryResult> {
+export async function downloadMessengerHistory(): Promise<
+  ActionResult<FlatMessage[]>
+> {
   // --- Configuration ---
   // These environment variables must be defined in your .env.local file
   const PAGE_ID = process.env.FACEBOOK_PAGE_ID;
@@ -25,7 +23,7 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
     );
     return {
       success: false,
-      error: "Server configuration error: Missing Facebook credentials.",
+      message: "Server configuration error: Missing Facebook credentials.",
     };
   }
 
@@ -47,7 +45,7 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
         console.error(`Facebook API Error (${response.status}): ${errorText}`);
         return {
           success: false,
-          error: `Facebook API Error (${response.status}): ${errorText}`,
+          message: `Facebook API Error (${response.status}): ${errorText}`,
         };
       }
 
@@ -87,7 +85,7 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
     if (allMessages.length === 0) {
       return {
         success: false,
-        error: "No messages found in recent conversations.",
+        message: "No messages found in recent conversations.",
       };
     }
 
@@ -97,7 +95,7 @@ export async function downloadMessengerHistory(): Promise<DownloadHistoryResult>
     console.error("Download Action Error:", error);
     return {
       success: false,
-      error:
+      message:
         error instanceof Error ? error.message : "An unknown error occurred.",
     };
   }

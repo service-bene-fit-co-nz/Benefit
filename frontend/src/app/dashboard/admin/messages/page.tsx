@@ -14,8 +14,8 @@ export default async function MessagesPage() {
     if (result.success) {
       messages = result.data;
     } else {
-      error = result.error || "Failed to fetch messages.";
-      console.error("Failed to fetch messages:", result.error);
+      error = result.message || "Failed to fetch messages.";
+      console.error("Failed to fetch messages:", result.message);
     }
   } catch (err: any) {
     console.error("Error fetching messages:", err);

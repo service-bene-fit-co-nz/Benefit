@@ -40,6 +40,7 @@ export function MessageCard({ message }: MessageCardProps) {
             <CardTitle className="text-base font-semibold">
               {message.sender_name}
             </CardTitle>
+            <p className="text-xs text-muted-foreground">{message.sender_id}</p>
             <p className="text-xs text-muted-foreground">
               {format(new Date(message.timestamp), "MMM dd, yyyy HH:mm:ss")}
             </p>

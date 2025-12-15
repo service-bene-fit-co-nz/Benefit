@@ -67,6 +67,7 @@ model Client {
   updatedAt           DateTime?            @db.Timestamp(6)
   roles               UserRole[]           @default([Client])
   authId              String               @unique(map: "client_auth_id_unique")
+  facebookId          String?              @unique
   gender              Gender?
   programmeHabits     ClientHabit[]
   transactions        ClientTransaction[]
