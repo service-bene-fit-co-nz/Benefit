@@ -11,6 +11,7 @@ export type ClientSearchResult = {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  facebookId?: string | null;
 };
 
 export async function searchClients(
@@ -115,6 +116,7 @@ export async function readAllClients(): Promise<
         firstName: true,
         lastName: true,
         authId: true,
+        facebookId: true,
       },
       orderBy: [
         {
@@ -143,6 +145,7 @@ export async function readAllClients(): Promise<
         firstName: client.firstName,
         lastName: client.lastName,
         email: user?.email || null,
+        facebookId: client.facebookId,
       };
     });
 

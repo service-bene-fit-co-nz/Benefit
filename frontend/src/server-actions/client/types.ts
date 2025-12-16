@@ -16,6 +16,7 @@ export type Client = {
   current: boolean;
   disabled: boolean;
   avatarUrl: string | null;
+  facebookId: string | null; // Added facebookId
   contactInfo: ContactInfoItem[] | null;
   createdAt: Date | null;
   updatedAt: Date | null;

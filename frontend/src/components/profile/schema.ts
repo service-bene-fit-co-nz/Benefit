@@ -22,6 +22,7 @@ export const ProfileSchema = z.object({
     .url({ message: "Must be a valid URL." })
     .nullable()
     .optional(),
+  facebookId: z.string().nullable().optional(), // Added facebookId
   contactInfo: z.array(ContactInfoItemSchema).nullable().optional(),
   createdAt: z.date().nullable().optional(),
   updatedAt: z.date().nullable().optional(),

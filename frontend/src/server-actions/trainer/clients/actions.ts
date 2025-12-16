@@ -14,6 +14,7 @@ export interface ClientForTrainer {
   avatarUrl?: string;
   gender?: string;
   settings?: Prisma.JsonValue;
+  facebook?: string;
 }
 
 export async function fetchClientsForTrainer(
@@ -84,6 +85,7 @@ export async function fetchClientsForTrainer(
         authId: true,
         gender: true,
         settings: true,
+        facebookId: true,
       },
       orderBy: {
         firstName: "asc",
@@ -142,6 +144,7 @@ export async function fetchClientsForTrainer(
           avatarUrl: client.avatarUrl || undefined,
           gender: client.gender || undefined,
           settings: client.settings || undefined,
+          facebook: client.facebookId || undefined,
         };
       })
     );

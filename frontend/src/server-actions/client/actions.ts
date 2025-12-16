@@ -85,6 +85,7 @@ export async function readClient(
         updatedAt: true,
         roles: true,
         authId: true,
+        facebookId: true,
       },
     });
 
@@ -121,6 +122,7 @@ export async function readClient(
       updatedAt: client.updatedAt,
       roles: client.roles,
       authId: client.authId,
+      facebookId: client.facebookId,
     };
 
     return {
@@ -208,10 +210,10 @@ export async function updateClient(
           updatedAt: true,
           roles: true,
           authId: true,
+          facebookId: true,
         },
       });
-    }
-    else {
+    } else {
       // CREATE logic
       updatedOrCreatedRecord = await prisma.client.create({
         data: {
@@ -259,6 +261,7 @@ export async function updateClient(
       updatedAt: updatedOrCreatedRecord.updatedAt,
       roles: updatedOrCreatedRecord.roles,
       authId: updatedOrCreatedRecord.authId,
+      facebookId: (updatedOrCreatedRecord as any).facebookId,
     };
 
     return {
@@ -409,7 +412,10 @@ export async function fetchClientWithAllData(
 
     const convertedClient = convertDecimalToString(client);
 
-    console.log("Converted Client Data:", JSON.stringify(convertedClient, null, 2));
+    console.log(
+      "Converted Client Data:",
+      JSON.stringify(convertedClient, null, 2)
+    );
 
     return {
       success: true,

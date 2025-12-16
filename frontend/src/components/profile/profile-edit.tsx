@@ -293,7 +293,7 @@ export function ProfileEditForm({
                   </FormItem>
                 )}
               />
-              <FormItem className="md:col-span-2">
+              <FormItem>
                 <FormLabel>Full Name</FormLabel>
                 <FormControl>
                   <Input
@@ -308,6 +308,28 @@ export function ProfileEditForm({
                   Your full name is derived from your first and last name.
                 </FormDescription>
               </FormItem>
+
+              <FormField
+                control={form.control}
+                name="facebookId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Facebook ID</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        readOnly
+                        disabled
+                        value={field.value ?? ""}
+                        placeholder="Not connected"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Your connected Facebook account ID.
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:col-span-2">
                 <FormField

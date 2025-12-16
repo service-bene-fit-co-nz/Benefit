@@ -8,9 +8,10 @@ import { FlatMessage, FacebookConversation } from "./types";
  * This action replaces the functionality of the /api/facebook/messenger/download route.
  * @returns {Promise<ActionResult<FlatMessage[]>>} A promise that resolves to an object containing either the message data or an error.
  */
-export async function downloadMessengerHistory(): Promise<
-  ActionResult<FlatMessage[]>
-> {
+export async function downloadMessengerHistory(
+  startDate?: Date,
+  endDate?: Date
+): Promise<ActionResult<FlatMessage[]>> {
   // --- Configuration ---
   // These environment variables must be defined in your .env.local file
   const PAGE_ID = process.env.FACEBOOK_PAGE_ID;
@@ -89,8 +90,21 @@ export async function downloadMessengerHistory(): Promise<
       };
     }
 
-    // 3. Return the data
-    return { success: true, data: allMessages };
+    // 3. Apply date filters if provided
+    let filteredMessages = allMessages;
+    if (startDate) {
+      filteredMessages = filteredMessages.filter(
+        (msg) => new Date(msg.timestamp) >= startDate
+      );
+    }
+    if (endDate) {
+      filteredMessages = filteredMessages.filter(
+        (msg) => new Date(msg.timestamp) <= endDate
+      );
+    }
+
+    // 4. Return the data
+    return { success: true, data: filteredMessages };
   } catch (error) {
     console.error("Download Action Error:", error);
     return {
