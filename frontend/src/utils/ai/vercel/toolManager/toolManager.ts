@@ -8,11 +8,15 @@ import {
   getClientIdByNameTool,
   saveClientNoteTool,
 } from "./tools/client/client";
-import { getCurrentClientDetailsTool } from "./tools/currentClient/currentClient";
+import {
+  getCurrentClientDetailsTool,
+  getCurrentClientFacebookMessagesTool,
+} from "./tools/currentClient/currentClient";
 import { sqlQueryTool } from "./tools/db/prisma";
 
 export type ToolType =
   | "currentClient.details.get"
+  | "currentClient.facebook.messages.get"
   | "allClients.details.get"
   | "allClients.notes.get"
   | "allClients.notes.save"
@@ -32,6 +36,11 @@ const toolFunctionMap: NestedToolMap = {
   currentClient: {
     details: {
       get: getCurrentClientDetailsTool,
+    },
+    facebook: {
+      messages: {
+        get: getCurrentClientFacebookMessagesTool,
+      },
     },
   },
   allClients: {
@@ -66,6 +75,7 @@ const toolFunctionMap: NestedToolMap = {
 
 const toolNameMap: Record<ToolType, string> = {
   "currentClient.details.get": "getCurrentClientDetails",
+  "currentClient.facebook.messages.get": "getCurrentClientFacebookMessages",
   "allClients.details.get": "getClientDetails",
   "allClients.notes.get": "getClientNotes",
   "allClients.notes.save": "saveClientNote",

@@ -191,6 +191,7 @@ export async function fetchClientById(
         authId: true,
         gender: true,
         settings: true,
+        facebookId: true,
       },
     });
 
@@ -248,6 +249,7 @@ export async function fetchClientById(
       avatarUrl: client.avatarUrl || undefined,
       gender: client.gender || undefined,
       settings: client.settings || undefined,
+      facebook: client.facebookId || undefined,
     };
   } catch (error) {
     console.error(`Error fetching client by ID ${clientId}:`, error);

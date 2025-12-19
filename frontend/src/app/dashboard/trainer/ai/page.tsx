@@ -12,6 +12,7 @@ const TrainerAIPage = () => {
     "allClients.idByName.get",
     "db.sqlQuery.get",
     "utility.currentDateTime.get",
+    "currentClient.facebook.messages.get",
   ]; // Define LLM tools as an empty array for this page
 
   return (

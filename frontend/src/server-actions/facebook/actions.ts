@@ -10,7 +10,8 @@ import { FlatMessage, FacebookConversation } from "./types";
  */
 export async function downloadMessengerHistory(
   startDate?: Date,
-  endDate?: Date
+  endDate?: Date,
+  facebookId?: string
 ): Promise<ActionResult<FlatMessage[]>> {
   // --- Configuration ---
   // These environment variables must be defined in your .env.local file
@@ -31,7 +32,12 @@ export async function downloadMessengerHistory(
   // Fields for Field Expansion: retrieves message details nested under conversations
   const MESSAGE_FIELDS =
     "messages{id,created_time,from,message,attachments,to}";
-  const INITIAL_API_URL = `https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/conversations?fields=${MESSAGE_FIELDS}&platform=messenger&access_token=${ACCESS_TOKEN}`;
+  // The sender's Page-Scoped ID
+  const USER_ID = facebookId;
+
+  const INITIAL_API_URL = facebookId
+    ? `https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/conversations?user_id=${USER_ID}&fields=${MESSAGE_FIELDS}&platform=messenger&access_token=${ACCESS_TOKEN}`
+    : `https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/conversations?fields=${MESSAGE_FIELDS}&platform=messenger&access_token=${ACCESS_TOKEN}`;
 
   let allMessages: FlatMessage[] = [];
   let nextUrl: string | undefined = INITIAL_API_URL;
@@ -103,7 +109,14 @@ export async function downloadMessengerHistory(
       );
     }
 
-    // 4. Return the data
+    // 4. Sort messages chronologically (newest to oldest)
+    filteredMessages.sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    // 5. Return the data
     return { success: true, data: filteredMessages };
   } catch (error) {
     console.error("Download Action Error:", error);
