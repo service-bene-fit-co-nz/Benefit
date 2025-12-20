@@ -91,6 +91,7 @@ const Profile = () => {
         updatedAt: data.updatedAt || null,
         roles: data.roles,
         authId: data.authId,
+        facebookId: data.facebookId || null,
       };
 
       const result = await updateClient(auth_id, updateData);

@@ -35,7 +35,10 @@ const ClientSchema = z.object({
     .refine((date) => !date || date < new Date(), {
       message: "Birth date cannot be in the future.",
     }),
-  gender: z.enum(['Male', 'Female', 'Other', 'PreferNotToSay']).nullable().optional(),
+  gender: z
+    .enum(["Male", "Female", "Other", "PreferNotToSay"])
+    .nullable()
+    .optional(),
   current: z.boolean().default(true), // Default to true if not provided
   disabled: z.boolean().default(false), // Default to false if not provided
   avatarUrl: z.string().url("Must be a valid URL.").nullable().optional(), // Allow null or undefined
@@ -47,13 +50,12 @@ const ClientSchema = z.object({
   updatedAt: z.date().nullable().optional(),
   roles: z.array(z.string()).optional(),
   authId: z.string().optional(),
+  facebookId: z.string().nullable().optional(),
 });
 
 export async function readClient(
   user_id: string
 ): Promise<ActionResult<Client>> {
-
-
   if (typeof user_id !== "string" || user_id.trim() === "") {
     console.error("Invalid auth_id provided to getClient Server Action.");
     return {
@@ -77,6 +79,7 @@ export async function readClient(
         avatarUrl: true,
         contactInfo: true,
         createdAt: true,
+        facebookId: true,
       },
     });
 
@@ -94,18 +97,18 @@ export async function readClient(
     const contact_info = Array.isArray(client.contactInfo)
       ? (client.contactInfo as ContactInfoItem[])
       : typeof client.contactInfo === "string"
-        ? (JSON.parse(client.contactInfo) as ContactInfoItem[])
-        : client.contactInfo === null
-          ? null
-          : [];
+      ? (JSON.parse(client.contactInfo) as ContactInfoItem[])
+      : client.contactInfo === null
+      ? null
+      : [];
 
     const firstPhoneItem = contact_info
       ? contact_info.find((item) => item.type === "phone" && item.primary)
-        ?.value
+          ?.value
       : "";
     const firstEmailItem = contact_info
       ? contact_info.find((item) => item.type === "email" && item.primary)
-        ?.value
+          ?.value
       : "";
 
     const clientResult: Client = {
@@ -122,6 +125,7 @@ export async function readClient(
       updatedAt: null, // Not available in current select
       roles: [], // Not available in current select
       authId: client.authId,
+      facebookId: client.facebookId || null,
     };
 
     return {
@@ -133,8 +137,9 @@ export async function readClient(
 
     return {
       success: false,
-      message: `An unexpected server error occurred: ${err.message || "Unknown error"
-        }`,
+      message: `An unexpected server error occurred: ${
+        err.message || "Unknown error"
+      }`,
       code: "UNEXPECTED_SERVER_ERROR",
       details:
         process.env.NODE_ENV === "development"
@@ -146,10 +151,7 @@ export async function readClient(
 
 export async function updateClient(
   auth_id: string,
-  data: Omit<
-    Client,
-    "id" | "createdAt" | "updatedAt" | "roles"
-  >
+  data: Omit<Client, "id" | "createdAt" | "updatedAt" | "roles">
 ): Promise<ActionResult<Client>> {
   if (typeof auth_id !== "string" || auth_id.trim() === "") {
     return {
@@ -200,6 +202,7 @@ export async function updateClient(
         disabled: validatedData.disabled,
         avatarUrl: validatedData.avatarUrl,
         contactInfo: contactInfoJson,
+        facebookId: validatedData.facebookId,
       },
       create: {
         id: crypto.randomUUID(),
@@ -212,6 +215,7 @@ export async function updateClient(
         disabled: validatedData.disabled,
         avatarUrl: validatedData.avatarUrl,
         contactInfo: contactInfoJson,
+        facebookId: validatedData.facebookId,
       },
       select: {
         authId: true,
@@ -223,6 +227,7 @@ export async function updateClient(
         avatarUrl: true,
         contactInfo: true,
         createdAt: true,
+        facebookId: true,
       },
     });
 
@@ -233,8 +238,7 @@ export async function updateClient(
       id: updatedOrCreatedRecord.authId, // Using authId as id for now
       firstName:
         updatedOrCreatedRecord?.firstName ?? "** First name required **",
-      lastName:
-        updatedOrCreatedRecord?.lastName ?? "** Last name required **",
+      lastName: updatedOrCreatedRecord?.lastName ?? "** Last name required **",
       birthDate: updatedOrCreatedRecord.birthDate,
       gender: null, // Not available in current select
       current: updatedOrCreatedRecord.current,
@@ -247,6 +251,7 @@ export async function updateClient(
       updatedAt: null, // Not available in current select
       roles: [], // Not available in current select
       authId: updatedOrCreatedRecord.authId,
+      facebookId: updatedOrCreatedRecord.facebookId || null,
     };
 
     return {
@@ -256,8 +261,9 @@ export async function updateClient(
   } catch (err: any) {
     return {
       success: false,
-      message: `An unexpected server error occurred: ${err.message || "Unknown error"
-        }`,
+      message: `An unexpected server error occurred: ${
+        err.message || "Unknown error"
+      }`,
       code: "UNEXPECTED_SERVER_ERROR",
       details:
         process.env.NODE_ENV === "development"
