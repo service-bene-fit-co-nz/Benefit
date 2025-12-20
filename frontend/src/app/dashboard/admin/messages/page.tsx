@@ -10,14 +10,9 @@ const getMessengerHistory = async (
   context: QueryFunctionContext
 ): Promise<any[]> => {
   const [_key, startDate, endDate] = context.queryKey;
-
-  if (!(startDate instanceof Date) || !(endDate instanceof Date)) {
-    return [];
-  }
-
   const result: ActionResult<any[]> = await downloadMessengerHistory(
-    startDate,
-    endDate
+    startDate as Date | undefined,
+    endDate as Date | undefined
   );
 
   if (!result.success) {
