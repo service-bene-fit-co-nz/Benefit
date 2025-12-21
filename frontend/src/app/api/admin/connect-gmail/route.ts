@@ -9,20 +9,6 @@ const GOOGLE_GMAIL_CLIENT_SECRET = process.env.GOOGLE_GMAIL_CLIENT_SECRET!;
 const GOOGLE_GMAIL_CLIENT_REDIRECT_URI =
   process.env.GOOGLE_GMAIL_CLIENT_REDIRECT_URI!; // This is your /api/admin/connect-gmail/callback URL
 
-// Add logging for environment variables
-console.log(
-  "[Gmail OAuth] GOOGLE_GMAIL_CLIENT_ID:",
-  GOOGLE_GMAIL_CLIENT_ID ? "set" : "not set"
-);
-console.log(
-  "[Gmail OAuth] GOOGLE_GMAIL_CLIENT_SECRET:",
-  GOOGLE_GMAIL_CLIENT_SECRET ? "set" : "not set"
-);
-console.log(
-  "[Gmail OAuth] GOOGLE_GMAIL_CLIENT_REDIRECT_URI:",
-  GOOGLE_GMAIL_CLIENT_REDIRECT_URI
-);
-
 // Define the scopes needed for your application's Gmail access
 const SCOPES = [
   "https://www.googleapis.com/auth/gmail.send",
@@ -66,9 +52,6 @@ export async function GET() {
       scope: SCOPES,
       prompt: "consent", // Force user to re-consent, ensures refresh token on initial authorization
     });
-
-    // Log the generated authorization URL
-    console.log("[Gmail OAuth] Generated Authorization URL:", authorizeUrl);
 
     // Redirect the user's browser directly to Google's OAuth consent screen
     return NextResponse.redirect(authorizeUrl);

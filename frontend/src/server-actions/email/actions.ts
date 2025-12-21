@@ -188,8 +188,6 @@ export async function readEmail(
       select: { id: true, properties: true },
     });
 
-    //console.log(JSON.stringify(gmailConfigs, null, 2));
-
     if (gmailConfigs.length === 0) {
       return {
         success: false,
@@ -202,7 +200,6 @@ export async function readEmail(
     // Use the authenticated Gmail client utility
     const { gmail, connectedEmail } = await getAuthenticatedGmailClient();
 
-    //q: `in:${folder1} OR label:${label1}`,
     // Modify createGmailQuery to include clientEmail
     const query: string = createGmailQuery(
       folders,
@@ -212,7 +209,6 @@ export async function readEmail(
       endDate
     );
 
-    //console.log("Gmail API Query:", query); // Add this line for debugging
     // 5. List messages from the specified folder
     const listResponse = await gmail.users.messages.list({
       userId: "me",

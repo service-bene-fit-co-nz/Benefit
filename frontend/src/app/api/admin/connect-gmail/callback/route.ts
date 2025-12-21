@@ -1,9 +1,9 @@
 // app/api/admin/connect-gmail/callback/route.ts
-import { encrypt } from '@/lib/encryption';
-import prisma from '@/utils/prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
-import { OAuthServices } from '@prisma/client';
+import { encrypt } from "@/lib/encryption";
+import prisma from "@/utils/prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { google } from "googleapis";
+import { OAuthServices } from "@prisma/client";
 
 // Ensure these environment variables are correctly set.
 // Use the exact names from your .env.local file.
@@ -16,8 +16,8 @@ const GOOGLE_GMAIL_CLIENT_REDIRECT_URI =
 // const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 // Get base URL from request headers or environment
 const getBaseUrl = (request: Request) => {
-  const host = request.headers.get('host');
-  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const host = request.headers.get("host");
+  const protocol = request.headers.get("x-forwarded-proto") || "http";
   return `${protocol}://${host}`;
 };
 
@@ -42,9 +42,16 @@ export async function GET(request: Request) {
   };
 
   // Validate environment variables
-  if (!GOOGLE_GMAIL_CLIENT_ID || !GOOGLE_GMAIL_CLIENT_SECRET || !GOOGLE_GMAIL_CLIENT_REDIRECT_URI) {
+  if (
+    !GOOGLE_GMAIL_CLIENT_ID ||
+    !GOOGLE_GMAIL_CLIENT_SECRET ||
+    !GOOGLE_GMAIL_CLIENT_REDIRECT_URI
+  ) {
     console.error("Missing Google OAuth environment variables");
-    return redirectToDashboardAdminError("missing_env_vars", "Google OAuth credentials not configured");
+    return redirectToDashboardAdminError(
+      "missing_env_vars",
+      "Google OAuth credentials not configured"
+    );
   }
 
   const { searchParams } = new URL(request.url);
@@ -154,15 +161,13 @@ export async function GET(request: Request) {
           },
         });
       }
-
-      console.log("Gmail config stored successfully:", connectedEmailAddress);
     } catch (configError: unknown) {
       console.error("Error storing Gmail config in database:", configError);
-      const errorMessage = configError instanceof Error ? configError.message : String(configError);
-      return redirectToDashboardAdminError(
-        "db_config_failed",
-        errorMessage
-      );
+      const errorMessage =
+        configError instanceof Error
+          ? configError.message
+          : String(configError);
+      return redirectToDashboardAdminError("db_config_failed", errorMessage);
     }
 
     const baseUrl = getBaseUrl(request);
@@ -170,10 +175,7 @@ export async function GET(request: Request) {
     successUrl.searchParams.set("success", "gmail_connected");
     return NextResponse.redirect(successUrl.toString());
   } catch (error: unknown) {
-    console.error(
-      "Error during token exchange or profile fetch:",
-      error
-    );
+    console.error("Error during token exchange or profile fetch:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return redirectToDashboardAdminError("gmail_auth_failed", errorMessage);
   }

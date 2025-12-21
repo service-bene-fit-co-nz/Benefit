@@ -33,13 +33,6 @@ export const HabitDailyCard = ({
   const [clientHabitId, setClientHabitId] = useState(
     habit.clientHabitId ?? null
   );
-
-  // const habitFrequency = habit.habitFrequency ?? 1;
-  // const isCompleted = timesDone >= habitFrequency;
-
-  // console.log("*** Rendering HabitDailyCard for:");
-  // console.log(JSON.stringify(habit,null,2));
-
   const handleUpdate = (newTimesDone: number) => {
     const oldTimesDone = timesDone;
     setTimesDone(newTimesDone); // Optimistic update

@@ -1,9 +1,14 @@
-import AIChat from "@/components/ai/v1/ai-chat";
+import { AIChatConversation } from "@/components/ai/AIChatConversation";
 import React from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { UserRole } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-const ChatBot = () => {
+const ChatBot = async () => {
+  const session = await getServerSession(authOptions);
+  const authId = session?.user?.id;
+
   return (
     <ProtectedRoute
       requiredRoles={[UserRole.SystemAdmin]}
@@ -11,7 +16,9 @@ const ChatBot = () => {
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-            <p className="text-gray-600">You need System Administrator privileges to access this page.</p>
+            <p className="text-gray-600">
+              You need System Administrator privileges to access this page.
+            </p>
           </div>
         </div>
       }
@@ -21,7 +28,11 @@ const ChatBot = () => {
           <div className="text-3xl">Chatbot</div>
         </div>
         <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl" />
-        <AIChat />
+        <AIChatConversation
+          llmTools={[]}
+          hasTrainerPrompt={false}
+          authId={authId}
+        />
       </div>
     </ProtectedRoute>
   );

@@ -61,10 +61,6 @@ export function AIChatConversation({
   authId?: string;
 }) {
   const { user } = useAuth();
-  useEffect(() => {
-    console.log(JSON.stringify(user, null, 2));
-  }, [user]);
-
   const [inputValue, setInputValue] = useState("");
   const [selectedModel, setSelectedModel] = useState<LLMType>(models[0].id);
   const [selectedPrompt, setSelectedPrompt] = useState<string | undefined>();
@@ -122,8 +118,6 @@ export function AIChatConversation({
         \n` +
         JSON.stringify(clientData, null, 2);
     }
-
-    console.log("CONTEXT", context);
 
     const newSystemMessage: UIMessage = {
       id: "system-context",

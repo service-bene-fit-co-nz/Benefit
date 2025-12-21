@@ -46,10 +46,6 @@ function handleIncomingMessage(event: MessagingEvent) {
     for (const attachment of attachments) {
       if (attachment.type === "audio") {
         const audioUrl = attachment.payload.url;
-        console.log(`[AUDIO RECEIVED] Sender PSID: ${senderId}`);
-        console.log(`[AUDIO URL] URL: ${audioUrl}`);
-
-        // Start the long-running process asynchronously!
         startAudioProcessing(senderId, audioUrl);
         return;
       }

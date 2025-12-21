@@ -9,7 +9,6 @@ import {
 } from "./tools/supabase/user";
 import { getClientDetails, getClientNotes } from "./tools/client/client";
 
-
 export type ToolType =
   | "utility.calculator.add"
   | "utility.calculator.subtract"
@@ -76,11 +75,9 @@ export const getTool = (type: ToolType): DynamicTool<string> => {
   }
 
   if (typeof currentLevel === "object") {
-    // console.log("*** Get Tool ***");
-    // console.log(JSON.stringify(currentLevel, null, 2));
     return currentLevel as DynamicTool<string>;
   } else {
-    console.log("*** Get Tool Failed ***");
+    console.error("Get Tool Failed");
     throw new Error(
       `Tool of type "${type}" is not a direct function. It's an intermediate object.`
     );

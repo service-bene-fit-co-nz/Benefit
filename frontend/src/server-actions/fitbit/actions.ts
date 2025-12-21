@@ -39,10 +39,6 @@ export async function getClientActivities(
 ): Promise<ActionResult<any[]>> {
   startDate = startOfDay(startDate);
   endDate = endOfDay(endDate);
-  console.log(`Fetching activities for clientId: ${clientId}`);
-  console.log(`Start ${startDate}`);
-  console.log(`End   ${endDate}`);
-
   const client = await prisma.client.findUnique({
     where: { id: clientId },
     select: { settings: true },
@@ -522,10 +518,6 @@ export async function fetchRawFitbitDatabyDate(
 ): Promise<ActionResult<any[]>> {
   startDate = startOfDay(startDate);
   endDate = endOfDay(endDate);
-  console.log(`Fetching activities for clientId: ${clientId}`);
-  console.log(`Start ${startDate}`);
-  console.log(`End   ${endDate}`);
-
   const client = await prisma.client.findUnique({
     where: { id: clientId },
     select: { settings: true },
@@ -815,10 +807,6 @@ export async function fetchRawFitbitData(
 ): Promise<ActionResult<any[]>> {
   startDate = startOfDay(startDate);
   endDate = endOfDay(endDate);
-  console.log(`Fetching activities for clientId: ${clientId}`);
-  console.log(`Start ${startDate}`);
-  console.log(`End   ${endDate}`);
-
   const client = await prisma.client.findUnique({
     where: { id: clientId },
     select: { settings: true },

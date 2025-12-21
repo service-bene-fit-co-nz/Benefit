@@ -411,12 +411,6 @@ export async function fetchClientWithAllData(
     }
 
     const convertedClient = convertDecimalToString(client);
-
-    console.log(
-      "Converted Client Data:",
-      JSON.stringify(convertedClient, null, 2)
-    );
-
     return {
       success: true,
       data: convertedClient,

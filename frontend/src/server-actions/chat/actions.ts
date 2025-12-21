@@ -6,10 +6,7 @@ import { getAuthenticatedChatClient } from "@/lib/chat-utils";
 export async function listChatSpaces() {
   try {
     const { chat } = await getAuthenticatedChatClient();
-    console.log(JSON.stringify(chat, null, 2));
-
     const response = await chat.spaces.list();
-
     return { success: true, data: response.data.spaces || [] };
   } catch (error: any) {
     console.error("Error fetching Google Chat spaces:", error);
@@ -20,7 +17,6 @@ export async function listChatSpaces() {
 export async function readChatMessages(spaceName: string) {
   try {
     const { chat } = await getAuthenticatedChatClient();
-
     const response = await chat.spaces.messages.list({
       parent: spaceName,
     });

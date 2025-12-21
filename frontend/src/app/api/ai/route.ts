@@ -30,8 +30,6 @@ export async function POST(req: Request) {
     tools: ToolManager.ToolType[];
   } = await req.json();
 
-  console.log("Requested tools:", JSON.stringify(tools, null, 2));
-
   let model;
   switch (selectedModel) {
     case "Gemini":

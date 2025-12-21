@@ -33,10 +33,7 @@ const sendVerificationRequest = async ({
                     <p>If you did not request this email, you can safely ignore it.</p>
                   `,
     };
-
     await sgMail.send(msg);
-
-    console.log("Magic link email sent successfully with SendGrid.");
   } catch (error) {
     console.error("SendGrid email error:", error);
   }

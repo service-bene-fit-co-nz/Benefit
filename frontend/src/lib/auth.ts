@@ -124,9 +124,6 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // Special bypass for developer SystemAdmin account
       if (user.email === "brentedwards.nz@gmail.com") {
-        console.log(
-          "Developer SystemAdmin account detected - bypassing OAuth restrictions"
-        );
         return true;
       }
 
@@ -243,9 +240,6 @@ export const authOptions: NextAuthOptions = {
               ],
             },
           });
-          console.log(
-            `Developer SystemAdmin client created for user: ${user.id}`
-          );
         } else {
           // Create a client record for regular new users
           let firstName: string | null = null;
@@ -260,9 +254,6 @@ export const authOptions: NextAuthOptions = {
             const derivedName = deriveNameFromEmail(user.email);
             firstName = derivedName.firstName;
             lastName = derivedName.lastName;
-            console.log(
-              `Derived name from email for ${user.email}: ${firstName} ${lastName}`
-            );
           }
 
           await prisma.client.create({
@@ -284,9 +275,6 @@ export const authOptions: NextAuthOptions = {
               ],
             },
           });
-          console.log(
-            `Client created for user: ${user.id} with name: ${firstName} ${lastName}`
-          );
         }
       } catch (error) {
         console.error("Error creating client:", error);
@@ -294,10 +282,6 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async signIn({ user, account, profile, isNewUser }) {
-      if (isNewUser) {
-        console.log(`New user signed in: ${user.id}`);
-      }
-
       // Special handling for developer SystemAdmin account
       if (user.email === "brentedwards.nz@gmail.com") {
         try {
@@ -329,9 +313,6 @@ export const authOptions: NextAuthOptions = {
                 ],
               },
             });
-            console.log(
-              "Created Client record for developer SystemAdmin account"
-            );
           } else if (!existingClient.roles.includes("SystemAdmin")) {
             // Ensure SystemAdmin role is present
             await prisma.client.update({

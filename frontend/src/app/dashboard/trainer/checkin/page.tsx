@@ -5,9 +5,8 @@ import { AdaptiveFilterLayout } from "@/components/layout/AdaptiveFilterLayout";
 import { SummaryFilterPanel } from "@/components/dashboard/trainer/summary/SummaryFilterPanel";
 import { ClientManagementPanel } from "@/components/dashboard/trainer/summary/ClientManagementPanel";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
-import { AIChatConversation } from "@/components/ai/v2/AIChatConversation";
-import { ToolType } from "@/utils/ai/langchain/toolManager/toolManager";
-import { getClientDetails, getClientNotes } from "@/utils/ai/langchain/toolManager/tools/client/client";
+import { AIChatConversation } from "@/components/ai/AIChatConversation";
+import { ToolType } from "@/utils/ai/vercel/toolManager/toolManager";
 
 export default function CheckIn() {
   const [selectedClient, setSelectedClient] = useState<
@@ -22,7 +21,11 @@ export default function CheckIn() {
     setSelectedClient(undefined);
   };
 
-  const llmTools: ToolType[] = ["client.details.get", "client.notes.get"];
+  const llmTools: ToolType[] = [
+    "allClients.details.get",
+    "allClients.notes.get",
+    "utility.currentDateTime.get",
+  ];
 
   return (
     <div className="h-full">
@@ -30,7 +33,11 @@ export default function CheckIn() {
         Header={<></>}
         MainContent={
           <div className="flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden border bg-background shadow-sm">
-            <AIChatConversation llmTools={llmTools} selectedClient={selectedClient} />
+            <AIChatConversation
+              llmTools={llmTools}
+              hasTrainerPrompt={true}
+              authId={selectedClient?.id}
+            />
           </div>
         }
         FilterPanel={

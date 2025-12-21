@@ -1,5 +1,5 @@
 import React from "react";
-import { AIChatConversation } from "@/components/ai/v3-vercel/AIChatConversation";
+import { AIChatConversation } from "@/components/ai/AIChatConversation";
 import { ToolType } from "@/utils/ai/vercel/toolManager/toolManager";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

@@ -1,9 +1,9 @@
-import { encrypt } from '@/lib/encryption';
-import prisma from '@/utils/prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
-import { getBaseUrl } from '@/lib/utils'; // Assuming getBaseUrl is in utils
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { encrypt } from "@/lib/encryption";
+import prisma from "@/utils/prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { getBaseUrl } from "@/lib/utils"; // Assuming getBaseUrl is in utils
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const FITBIT_CLIENT_ID = process.env.FITBIT_CLIENT_ID!;
 const FITBIT_CLIENT_SECRET = process.env.FITBIT_CLIENT_SECRET!;
@@ -33,7 +33,10 @@ export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user || !session.user.id) {
-    return redirectToClientSettingsError("unauthenticated", "User not authenticated.");
+    return redirectToClientSettingsError(
+      "unauthenticated",
+      "User not authenticated."
+    );
   }
 
   const authenticatedAuthId = session.user.id; // This is the authId from your User model
@@ -85,7 +88,12 @@ export async function GET(request: NextRequest) {
   });
 
   if (!client) {
-    console.error("Client not found or state mismatch for authId:", authenticatedAuthId, "clientIdFromState:", clientIdFromState);
+    console.error(
+      "Client not found or state mismatch for authId:",
+      authenticatedAuthId,
+      "clientIdFromState:",
+      clientIdFromState
+    );
     return redirectToClientSettingsError("client_not_found_or_mismatch");
   }
 
@@ -153,8 +161,10 @@ export async function GET(request: NextRequest) {
       const encryptedRefreshToken = encrypt(refreshToken);
       const encryptedAccessToken = encrypt(accessToken);
 
-      let currentSettingsArray = (client.settings || []) as Array<Record<string, any>>;
-      
+      let currentSettingsArray = (client.settings || []) as Array<
+        Record<string, any>
+      >;
+
       // Generate a unique ID for this specific Fitbit connection
       const connectionId = `fitbit-${fitbitUserId}`;
 
@@ -167,13 +177,48 @@ export async function GET(request: NextRequest) {
         id: connectionId,
         type: "Fitbit",
         properties: [
-          { name: "userId", value: fitbitUserId, editable: false, encrypted: false },
-          { name: "displayName", value: fitbitUserDisplayName, editable: true, encrypted: false },
-          { name: "accessToken", value: encryptedAccessToken, editable: false, encrypted: true },
-          { name: "expiresAt", value: new Date(Date.now() + expiresIn * 1000).toISOString(), editable: false, encrypted: false },
-          { name: "scopes", value: scopesGranted, editable: false, encrypted: false },
-          { name: "refreshToken", value: encryptedRefreshToken, editable: false, encrypted: true },
-          { name: "connectedAt", value: new Date().toISOString(), editable: false, encrypted: false },
+          {
+            name: "userId",
+            value: fitbitUserId,
+            editable: false,
+            encrypted: false,
+          },
+          {
+            name: "displayName",
+            value: fitbitUserDisplayName,
+            editable: true,
+            encrypted: false,
+          },
+          {
+            name: "accessToken",
+            value: encryptedAccessToken,
+            editable: false,
+            encrypted: true,
+          },
+          {
+            name: "expiresAt",
+            value: new Date(Date.now() + expiresIn * 1000).toISOString(),
+            editable: false,
+            encrypted: false,
+          },
+          {
+            name: "scopes",
+            value: scopesGranted,
+            editable: false,
+            encrypted: false,
+          },
+          {
+            name: "refreshToken",
+            value: encryptedRefreshToken,
+            editable: false,
+            encrypted: true,
+          },
+          {
+            name: "connectedAt",
+            value: new Date().toISOString(),
+            editable: false,
+            encrypted: false,
+          },
         ],
       };
 
@@ -191,11 +236,15 @@ export async function GET(request: NextRequest) {
           settings: currentSettingsArray,
         },
       });
-
-      console.log("Client Fitbit config stored successfully for user:", fitbitUserId);
     } catch (configError: unknown) {
-      console.error("Error storing client Fitbit config in database:", configError);
-      const errorMessage = configError instanceof Error ? configError.message : String(configError);
+      console.error(
+        "Error storing client Fitbit config in database:",
+        configError
+      );
+      const errorMessage =
+        configError instanceof Error
+          ? configError.message
+          : String(configError);
       return redirectToClientSettingsError(
         "db_config_failed_client_fitbit",
         errorMessage

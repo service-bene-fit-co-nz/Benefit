@@ -132,7 +132,8 @@ function calculateHabitDayData(
     const currentDate = normalizeDate(addDays(new Date(startDate), i));
 
     // Calculate how many habits are scheduled for this day
-    const dayOfWeek = parseInt(format(currentDate, "e", { timeZone: timezone })) - 1;
+    const dayOfWeek =
+      parseInt(format(currentDate, "e", { timeZone: timezone })) - 1;
     let habitCount = 0;
 
     let isProgrammeDay = false;
@@ -491,8 +492,6 @@ export async function readClientHabitsByDate(
       },
     });
 
-    console.log(JSON.stringify(existingClientHabits, null, 2));
-
     // 3. Create a lookup map for easy access
     const clientHabitMap = new Map(
       existingClientHabits.map((ch) => [ch.programmeHabitId, ch])
@@ -527,10 +526,6 @@ export async function readClientHabitsByDate(
         }
       }
     }
-
-    console.log("*** readClientHabitsByDate result:");
-    console.log(JSON.stringify(result, null, 2));
-
     return {
       success: true,
       data: result,

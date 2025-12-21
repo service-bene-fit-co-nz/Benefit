@@ -80,8 +80,12 @@ const getClientNoteDisplayName = (note: ClientNote): string => {
       return metadata?.subject || "Email";
     case "FitnessTrackerEntry":
       const type = metadata?.type || "Tracker";
-      const startDate = metadata?.startDate ? format(new Date(metadata.startDate), "dd/MM") : "Undef";
-      const endDate = metadata?.endDate ? format(new Date(metadata.endDate), "dd/MM") : "Undef";
+      const startDate = metadata?.startDate
+        ? format(new Date(metadata.startDate), "dd/MM")
+        : "Undef";
+      const endDate = metadata?.endDate
+        ? format(new Date(metadata.endDate), "dd/MM")
+        : "Undef";
       return `${type} (${startDate} - ${endDate})`;
     case "HabitEntry":
       return metadata?.habit || "Habit Entry";
@@ -204,8 +208,6 @@ export const SummaryFilterPanel = ({
     queryFn: () => fetchClientNotes(selectedClientId || ""),
     enabled: !!selectedClientId, // Only run query if a client is selected
   });
-
-  console.log("fetchedNotes:", fetchedNotes);
 
   const { data: session } = useSession();
   const loggedInUserName = session?.user?.name || "Unknown Trainer";
@@ -353,7 +355,6 @@ export const SummaryFilterPanel = ({
       }));
       isLoading = isClientsLoading;
     } else if (category.id === "forms") {
-      //console.log("Fetched Notes for Forms:", fetchedNotes);
       itemsToRender = fetchedNotes.filter(
         (note) => note.noteType === ClientNoteType.ClientForm
       );
@@ -490,7 +491,8 @@ export const SummaryFilterPanel = ({
                   ) : isClientNote(item) ? (
                     <div className="flex justify-between items-center">
                       <span>{getClientNoteDisplayName(item)}</span>
-                      {(category.id === "notes" || category.id === "fitness-tracker") && (
+                      {(category.id === "notes" ||
+                        category.id === "fitness-tracker") && (
                         <span
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent selecting the item
