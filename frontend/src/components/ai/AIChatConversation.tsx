@@ -46,7 +46,8 @@ import {
 import { getPrismaSchemaContext } from "@/server-actions/ai/actions";
 
 const models: { id: LLMType; name: string }[] = [
-  { id: "Gemini", name: "Gemini" },
+  { id: "Gemini-2.5-flash-lite", name: "Gemini-2.5-flash-lite" },
+  { id: "Gemini-2.5-flash", name: "Gemini-2.5-flash" },
   { id: "ChatGPT", name: "ChatGPT" },
   { id: "Groq", name: "Groq" },
 ];

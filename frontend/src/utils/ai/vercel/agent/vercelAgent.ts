@@ -17,21 +17,12 @@ import { Experimental_Agent as Agent } from "ai";
 export const agentQuery = async (
   request: AIConversation
 ): Promise<AIContent> => {
-  //console.log(JSON.stringify(request, null, 2));
-
   try {
     const tools = request.toolList.map((toolId) => {
       return getTool(toolId);
     });
 
     const llm = getLLM(request.model);
-    const myAgent = new Agent({
-      model: request.model,
-      system: "You are a helpful assistant.",
-      tools: {
-        // Your tools here
-      },
-    });
 
     const agent = await createReactAgent({
       llm,
@@ -107,7 +98,7 @@ const getLLM = (
   type: LLMType
 ): ChatGoogleGenerativeAI | ChatOpenAI | ChatGroq => {
   switch (type) {
-    case "Gemini": {
+    case "Gemini-2.5-flash": {
       const apiKey: string = process.env.GOOGLE_API_KEY || "";
       if (!apiKey) {
         throw new Error("GOOGLE_API_KEY environment variable is not set.");
@@ -115,6 +106,18 @@ const getLLM = (
       return new ChatGoogleGenerativeAI({
         apiKey: apiKey,
         model: "gemini-2.5-flash",
+        temperature: 0.7,
+        maxRetries: 0,
+      });
+    }
+    case "Gemini-2.5-flash-lite": {
+      const apiKey: string = process.env.GOOGLE_API_KEY || "";
+      if (!apiKey) {
+        throw new Error("GOOGLE_API_KEY environment variable is not set.");
+      }
+      return new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
+        model: "gemini-2.5-flash-lite",
         temperature: 0.7,
         maxRetries: 0,
       });

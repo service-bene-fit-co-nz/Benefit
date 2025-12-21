@@ -18,6 +18,7 @@ import {
 } from "@/utils/ai/vercel/toolManager/tools/client/client";
 import { sqlQueryTool } from "@/utils/ai/vercel/toolManager/tools/db/prisma";
 import * as ToolManager from "@/utils/ai/vercel/toolManager/toolManager";
+import { LLMType } from "@/utils/ai/types";
 
 export async function POST(req: Request) {
   const {
@@ -26,15 +27,19 @@ export async function POST(req: Request) {
     tools,
   }: {
     messages: UIMessage[];
-    selectedModel?: "Gemini" | "ChatGPT" | "Groq";
+    selectedModel?: LLMType;
     tools: ToolManager.ToolType[];
   } = await req.json();
 
   let model;
   switch (selectedModel) {
-    case "Gemini":
+    case "Gemini-2.5-flash":
       console.log("Using Gemini model");
       model = google("gemini-2.5-flash");
+      break;
+    case "Gemini-2.5-flash-lite":
+      console.log("Using Gemini Lite model");
+      model = google("gemini-2.5-flash-lite");
       break;
     case "ChatGPT":
       console.log("Using ChatGpt model");

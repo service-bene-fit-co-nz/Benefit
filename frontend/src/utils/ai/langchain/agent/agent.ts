@@ -94,7 +94,7 @@ const getLLM = (
   type: LLMType
 ): ChatGoogleGenerativeAI | ChatOpenAI | ChatGroq => {
   switch (type) {
-    case "Gemini": {
+    case "Gemini-2.5-flash": {
       const apiKey: string = process.env.GOOGLE_API_KEY || "";
       if (!apiKey) {
         throw new Error("GOOGLE_API_KEY environment variable is not set.");
@@ -103,6 +103,19 @@ const getLLM = (
         apiKey: apiKey,
         model: "gemini-2.5-flash",
         temperature: 0.7,
+        maxRetries: 0,
+      });
+    }
+    case "Gemini-2.5-flash-lite": {
+      const apiKey: string = process.env.GOOGLE_API_KEY || "";
+      if (!apiKey) {
+        throw new Error("GOOGLE_API_KEY environment variable is not set.");
+      }
+      return new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
+        model: "gemini-2.5-flash-lite",
+        temperature: 0.7,
+        maxRetries: 0,
       });
     }
     case "ChatGPT": {
@@ -114,6 +127,7 @@ const getLLM = (
         apiKey: apiKey,
         model: "gpt-3.5-turbo",
         temperature: 0.7,
+        maxRetries: 0,
       });
     }
     case "Groq": {
@@ -125,6 +139,7 @@ const getLLM = (
         apiKey: apiKey,
         model: "llama-3.1-8b-instant",
         temperature: 0.7,
+        maxRetries: 0,
       });
     }
   }
