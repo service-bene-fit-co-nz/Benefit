@@ -17,7 +17,7 @@ const TrainerAIPage = async () => {
     "db.sqlQuery.get",
     "utility.currentDateTime.get",
     "currentClient.facebook.messages.get",
-  ]; // Define LLM tools as an empty array for this page
+  ];
 
   return (
     <div className="flex h-[calc(100vh-4rem)] w-full flex-col overflow-hidden border bg-background shadow-sm">
