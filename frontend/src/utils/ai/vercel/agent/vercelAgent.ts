@@ -5,7 +5,11 @@ import { ChatOpenAI } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
 import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { AIConversation, AIContent, AIError } from "../../langchain/agent/agentTypes";
+import {
+  AIConversation,
+  AIContent,
+  AIError,
+} from "../../langchain/agent/agentTypes";
 import { LLMType } from "../../types";
 import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
 import { Experimental_Agent as Agent } from "ai";
@@ -112,6 +116,7 @@ const getLLM = (
         apiKey: apiKey,
         model: "gemini-2.5-flash",
         temperature: 0.7,
+        maxRetries: 0,
       });
     }
     case "ChatGPT": {
@@ -123,6 +128,7 @@ const getLLM = (
         apiKey: apiKey,
         model: "gpt-3.5-turbo",
         temperature: 0.7,
+        maxRetries: 0,
       });
     }
     case "Groq": {
@@ -134,6 +140,7 @@ const getLLM = (
         apiKey: apiKey,
         model: "llama-3.1-8b-instant",
         temperature: 0.7,
+        maxRetries: 0,
       });
     }
   }
