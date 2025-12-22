@@ -1,7 +1,11 @@
+import { google } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
+import { groq } from "@ai-sdk/groq";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
 import { LLMType } from "./ai/types";
+import { LanguageModelV2 } from "@ai-sdk/provider";
 
 export const getLLM = (
   type: LLMType
@@ -57,4 +61,24 @@ export const getLLM = (
     }
   }
   throw new Error("Invalid LLM type.");
+};
+
+export const getAISDKLLM = (type: LLMType): LanguageModelV2 => {
+  switch (type) {
+    case "Gemini-2.5-flash":
+      console.log("Using Gemini model");
+      return google("gemini-2.5-flash");
+    case "Gemini-2.5-flash-lite":
+      console.log("Using Gemini Lite model");
+      return google("gemini-2.5-flash-lite");
+    case "ChatGPT":
+      console.log("Using ChatGpt model");
+      return openai("gpt-3.5-turbo");
+    case "Groq":
+      console.log("Using Groq model");
+      return groq("llama-3.1-8b-instant");
+    default:
+      console.log("No model selected, defaulting to Gemini");
+      return google("gemini-2.5-flash");
+  }
 };

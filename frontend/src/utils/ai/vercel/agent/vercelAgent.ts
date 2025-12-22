@@ -1,4 +1,5 @@
-"use server";
+import { LLMType } from "./../../types";
+("use server");
 import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import {
@@ -9,13 +10,39 @@ import {
 import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
 import { getLLM } from "@/utils/ai-utils";
 
+const determineIfToolsNeeded = async (
+  llm: any,
+  lastMessage: string
+): Promise<boolean> => {
+  const response = await llm.invoke([
+    new HumanMessage(
+      `Does this query require external tools/data? Answer only "YES" or "NO". Query: ${lastMessage}`
+    ),
+  ]);
+  return response.content.toString().toUpperCase().includes("YES");
+};
+
 export const agentQuery = async (
   request: AIConversation
 ): Promise<AIContent> => {
   try {
-    const tools = request.toolList.map((toolId) => {
-      return getTool(toolId);
-    });
+    const currentUserMessage =
+      request.conversation[request.conversation.length - 1].content;
+    const toolsNeeded = await determineIfToolsNeeded(
+      getLLM("Gemini-1.5-flash"),
+      currentUserMessage
+    );
+
+    let tools: any[] = [];
+    if (toolsNeeded) {
+      console.log("Tools are needed for this query.");
+
+      tools = request.toolList.map((toolId) => {
+        return getTool(toolId);
+      });
+    } else {
+      console.log("No tools are needed for this query.");
+    }
 
     const llm = getLLM(request.model);
 
