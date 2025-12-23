@@ -63,7 +63,7 @@ export const getLLM = (
   throw new Error("Invalid LLM type.");
 };
 
-export const getAISDKLLM = (type: LLMType): LanguageModelV2 => {
+export const createModel = (type: LLMType): LanguageModelV2 => {
   switch (type) {
     case "Gemini-2.5-flash":
       console.log("Using Gemini model");

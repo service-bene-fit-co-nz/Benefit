@@ -142,5 +142,8 @@ const getLLM = (
         maxRetries: 0,
       });
     }
+    default: {
+      throw new Error(`Invalid LLM type: ${type}`);
+    }
   }
 };

@@ -1,4 +1,6 @@
 "use client";
+import { Card, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Conversation,
   ConversationContent,
@@ -51,6 +53,56 @@ const models: { id: LLMType; name: string }[] = [
   { id: "ChatGPT", name: "ChatGPT" },
   { id: "Groq", name: "Groq" },
 ];
+
+function FacebookMessageHistory({ data }: { data: any }) {
+  // Handle error states returned by your tool
+  if (data.error)
+    return <div className="text-destructive text-sm p-2">{data.error}</div>;
+  if (!Array.isArray(data)) return null;
+
+  return (
+    <div className="flex flex-col gap-3 my-4">
+      <div className="text-[10px] font-bold text-muted-foreground uppercase px-1">
+        Messenger History
+      </div>
+      {data.map((fbMsg: any, idx: number) => (
+        <Card key={idx} className="bg-muted/30 border-none shadow-none">
+          <CardContent className="p-3 space-y-2">
+            {fbMsg.text && (
+              <p className="text-sm leading-relaxed">{fbMsg.text}</p>
+            )}
+
+            {fbMsg.attachments?.map((attachment: any, i: number) => (
+              <div key={i} className="pt-1">
+                {/* Image Rendering */}
+                {attachment.type === "image" && (
+                  <div className="max-w-[200px] overflow-hidden rounded-md border">
+                    <AspectRatio ratio={1}>
+                      <img
+                        src={attachment.url}
+                        className="object-cover h-full w-full"
+                        alt="FB"
+                      />
+                    </AspectRatio>
+                  </div>
+                )}
+
+                {/* Audio Playback */}
+                {attachment.type === "audio" && (
+                  <div className="flex items-center gap-2 bg-background p-2 rounded-lg border">
+                    <audio controls className="h-6 w-full max-w-[200px]">
+                      <source src={attachment.url} />
+                    </audio>
+                  </div>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 export function AIChatConversation({
   llmTools,
@@ -251,18 +303,52 @@ export function AIChatConversation({
                       </div>
                     ) : (
                       message.parts?.map((part, i) => {
+                        // 1. Text Parts
                         if (part.type === "text") {
-                          if (message.role === "assistant") {
-                            return (
-                              <Response key={`${message.id}-${i}`}>
-                                {part.text}
-                              </Response>
-                            );
-                          }
-                          return (
+                          return message.role === "assistant" ? (
+                            <Response key={`${message.id}-${i}`}>
+                              {part.text}
+                            </Response>
+                          ) : (
                             <div key={`${message.id}-${i}`}>{part.text}</div>
                           );
                         }
+
+                        // 2. Specific Tool Part (New Pattern)
+                        // The type is now "tool-" + your tool name
+                        if (
+                          part.type ===
+                          "tool-getCurrentClientFacebookMessagesTool"
+                        ) {
+                          // In SDK 5/6, properties are flat on the part object
+                          const { toolCallId, state } = part;
+
+                          if (state === "output-available") {
+                            // "output" contains the data returned by your 'execute' function
+                            return (
+                              <FacebookMessageHistory
+                                key={toolCallId}
+                                data={part.output}
+                              />
+                            );
+                          }
+
+                          if (
+                            state === "input-available" ||
+                            state === "input-streaming"
+                          ) {
+                            return (
+                              <div
+                                key={toolCallId}
+                                className="flex items-center gap-2 py-2 italic text-xs text-muted-foreground"
+                              >
+                                <Loader size={12} className="animate-spin" />
+                                Fetching messenger history...
+                              </div>
+                            );
+                          }
+                        }
+
                         return null;
                       })
                     )}

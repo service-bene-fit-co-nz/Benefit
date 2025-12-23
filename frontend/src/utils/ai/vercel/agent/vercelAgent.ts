@@ -1,5 +1,5 @@
+"use server";
 import { LLMType } from "./../../types";
-("use server");
 import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import {
@@ -8,7 +8,16 @@ import {
   AIError,
 } from "../../langchain/agent/agentTypes";
 import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
-import { getLLM } from "@/utils/ai-utils";
+import { getLLM, createModel } from "@/utils/ai-utils";
+import {
+  convertToModelMessages,
+  streamText,
+  type UIMessage,
+  stepCountIs,
+  type Tool,
+} from "ai";
+import * as VercelToolManager from "@/utils/ai/vercel/toolManager/toolManager";
+import { request } from "https";
 
 const determineIfToolsNeeded = async (
   llm: any,
@@ -29,7 +38,7 @@ export const agentQuery = async (
     const currentUserMessage =
       request.conversation[request.conversation.length - 1].content;
     const toolsNeeded = await determineIfToolsNeeded(
-      getLLM("Gemini-1.5-flash"),
+      getLLM("Gemini-2.5-flash"),
       currentUserMessage
     );
 
@@ -114,4 +123,56 @@ export const agentQuery = async (
       type: "error",
     };
   }
+};
+
+const getLastMessageText = (messages: UIMessage[]): string | undefined => {
+  if (messages.length === 0) {
+    return undefined;
+  }
+
+  const lastMessage = messages[messages.length - 1];
+  const textPart = lastMessage.parts.find(
+    (part): part is { type: "text"; text: string } => part.type === "text"
+  );
+
+  return textPart?.text;
+};
+
+export const vercelStreamAgentQuery = async ({
+  messages,
+  selectedModel,
+  tools,
+}: {
+  messages: UIMessage[];
+  selectedModel?: LLMType;
+  tools: VercelToolManager.ToolType[];
+}) => {
+  "use server";
+  const currentUserMessage = getLastMessageText(messages);
+
+  const toolsNeeded = await determineIfToolsNeeded(
+    getLLM("Gemini-2.5-flash"),
+    currentUserMessage || ""
+  );
+
+  console.log("Tools needed:", toolsNeeded);
+
+  const allTools = VercelToolManager.getTools(tools);
+  let llmTools: { [key: string]: Tool } | undefined;
+  if (toolsNeeded) {
+    console.log("Tools are needed for this query.");
+    llmTools = allTools;
+  } else {
+    console.log("No tools are needed for this query.");
+  }
+
+  const result = streamText({
+    model: createModel(selectedModel as LLMType),
+    system: "You are a helpful assistant.",
+    messages: convertToModelMessages(messages),
+    tools: llmTools,
+    stopWhen: stepCountIs(5),
+  });
+
+  return result;
 };
