@@ -31,7 +31,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { PaperclipIcon, RotateCcwIcon } from "lucide-react";
 
 import { useChat, type UIMessage } from "@ai-sdk/react";
-import * as ToolManager from "@/utils/ai/vercel/toolManager/toolManager";
+import { type ToolType } from "@/utils/ai/types";
 import { useAuth } from "@/hooks/use-auth";
 import { type FormEventHandler, useCallback, useEffect, useState } from "react";
 import { LLMType } from "@/utils/ai/types";
@@ -109,7 +109,7 @@ export function AIChatConversation({
   hasTrainerPrompt,
   authId,
 }: {
-  llmTools: ToolManager.ToolType[];
+  llmTools: ToolType[];
   hasTrainerPrompt: boolean;
   authId?: string;
 }) {

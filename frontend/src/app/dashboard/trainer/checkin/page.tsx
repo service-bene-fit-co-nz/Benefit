@@ -6,7 +6,7 @@ import { SummaryFilterPanel } from "@/components/dashboard/trainer/summary/Summa
 import { ClientManagementPanel } from "@/components/dashboard/trainer/summary/ClientManagementPanel";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
 import { AIChatConversation } from "@/components/ai/AIChatConversation";
-import { ToolType } from "@/utils/ai/vercel/toolManager/toolManager";
+import { ToolType } from "@/utils/ai/types";
 
 export default function CheckIn() {
   const [selectedClient, setSelectedClient] = useState<

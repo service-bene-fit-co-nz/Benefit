@@ -1,4 +1,5 @@
 import { Tool } from "ai";
+import { ToolType, toolNameMap } from "../../types";
 import {
   getClientDetailsTool,
   getClientNotesTool,
@@ -11,20 +12,9 @@ import {
 import {
   getCurrentClientDetailsTool,
   getCurrentClientFacebookMessagesTool,
-} from "./tools/currentClient/currentClient";
+}
+from "./tools/currentClient/currentClient";
 import { sqlQueryTool } from "./tools/db/prisma";
-
-export type ToolType =
-  | "currentClient.details.get"
-  | "currentClient.facebook.messages.get"
-  | "allClients.details.get"
-  | "allClients.notes.get"
-  | "allClients.notes.save"
-  | "allClients.rawFitbitData.get"
-  | "allClients.allClients.get"
-  | "allClients.idByName.get"
-  | "db.sqlQuery.get"
-  | "utility.currentDateTime.get";
 
 // Define a recursive type for the nested tool map
 type NestedToolMap = {
@@ -73,18 +63,6 @@ const toolFunctionMap: NestedToolMap = {
   },
 };
 
-const toolNameMap: Record<ToolType, string> = {
-  "currentClient.details.get": "getCurrentClientDetails",
-  "currentClient.facebook.messages.get": "getCurrentClientFacebookMessages",
-  "allClients.details.get": "getClientDetails",
-  "allClients.notes.get": "getClientNotes",
-  "allClients.notes.save": "saveClientNote",
-  "allClients.rawFitbitData.get": "getRawFitbitData",
-  "allClients.allClients.get": "getAllClients",
-  "allClients.idByName.get": "getClientIdByName",
-  "db.sqlQuery.get": "sqlQuery",
-  "utility.currentDateTime.get": "getCurrentDateAndTime",
-};
 
 export const getTool = (type: ToolType): Tool => {
   const parts = type.split(".");

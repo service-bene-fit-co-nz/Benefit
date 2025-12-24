@@ -1,13 +1,6 @@
 "use server";
-import { LLMType } from "./../../types";
-import { BaseMessage, AIMessage, HumanMessage } from "@langchain/core/messages";
-import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import {
-  AIConversation,
-  AIContent,
-  AIError,
-} from "../../langchain/agent/agentTypes";
-import { getTool } from "@/utils/ai/langchain/toolManager/toolManager";
+import { LLMType, ToolType } from "./../../types";
+import { HumanMessage } from "@langchain/core/messages";
 import { getLLM, createModel } from "@/utils/ai-utils";
 import {
   convertToModelMessages,
@@ -18,112 +11,6 @@ import {
 } from "ai";
 import * as VercelToolManager from "@/utils/ai/vercel/toolManager/toolManager";
 import { getRelevantToolsLLM } from "../toolManager/toolRouterLLM";
-
-const determineIfToolsNeeded = async (
-  llm: any,
-  lastMessage: string
-): Promise<boolean> => {
-  const response = await llm.invoke([
-    new HumanMessage(
-      `Does this query require external tools/data? Answer only "YES" or "NO". Query: ${lastMessage}`
-    ),
-  ]);
-  return response.content.toString().toUpperCase().includes("YES");
-};
-
-export const agentQuery = async (
-  request: AIConversation
-): Promise<AIContent> => {
-  try {
-    const currentUserMessage =
-      request.conversation[request.conversation.length - 1].content;
-    const toolsNeeded = await determineIfToolsNeeded(
-      getLLM("Gemini-2.5-flash"),
-      currentUserMessage
-    );
-
-    let tools: any[] = [];
-    if (toolsNeeded) {
-      console.log("Tools are needed for this query.");
-
-      tools = request.toolList.map((toolId) => {
-        return getTool(toolId);
-      });
-    } else {
-      console.log("No tools are needed for this query.");
-    }
-
-    const llm = getLLM(request.model);
-
-    const agent = await createReactAgent({
-      llm,
-      tools: tools,
-      prompt: "You are a helpful assistant.\n" + request.prompt,
-    });
-
-    const chatMessages: BaseMessage[] = request.conversation
-      .filter((item) => item.type === "user" || item.type === "ai")
-      .map((item) => {
-        if (item.type === "user") {
-          return new HumanMessage(item.content);
-        } else if (item.type === "ai") {
-          return new AIMessage(item.content);
-        }
-        throw new Error(`Unknown message type: ${item.type}`);
-      });
-
-    const result = await agent.invoke({
-      messages: chatMessages,
-    });
-
-    //console.log(JSON.stringify(result, null, 2));
-
-    const serializedMessages = result.messages.map((msg: BaseMessage) => {
-      // Determine message type and extract relevant data
-      if (msg.getType() === "human") {
-        return {
-          role: "user",
-          content: msg.content,
-          // Add other plain properties you need from HumanMessage
-        };
-      } else if (msg.getType() === "ai") {
-        return {
-          role: "ai",
-          content: msg.content,
-          // Add other plain properties you need from AIMessage, e.g., tool_calls if applicable
-          tool_calls: (msg as AIMessage).tool_calls, // Cast to AIMessage to access tool_calls if they exist
-          response_metadata: (msg as AIMessage).response_metadata, // Example: for token usage
-        };
-      }
-      // Handle other message types if necessary
-      return { role: "unknown", content: "Could not serialize message" };
-    });
-
-    if (serializedMessages.length) {
-      return {
-        id: (Date.now() + 1).toString(),
-        content:
-          serializedMessages[serializedMessages.length - 1].content.toString(),
-        type: "ai",
-      };
-    }
-    throw new AIError("Undefined Groq response error");
-  } catch (error: any) {
-    if (error instanceof AIError) {
-      return {
-        id: (Date.now() + 1).toString(),
-        content: error.message,
-        type: "error",
-      };
-    }
-    return {
-      id: (Date.now() + 1).toString(),
-      content: `An Error occurred: ${error.message}`,
-
-      type: "error",
-    };
-  }
-};
 
 const getLastMessageText = (messages: UIMessage[]): string | undefined => {
   if (messages.length === 0) {
@@ -138,22 +25,23 @@ const getLastMessageText = (messages: UIMessage[]): string | undefined => {
 
 const getTools = async (
   prompt: string,
-  tools: VercelToolManager.ToolType[]
+  tools: ToolType[]
 ): Promise<{ [key: string]: Tool } | undefined> => {
-  const toolsNeeded = await determineIfToolsNeeded(
-    getLLM("Gemini-2.5-flash"),
-    prompt || ""
-  );
+  const relevantTools = await getRelevantToolsLLM(prompt || "", tools);
 
-  if (!toolsNeeded) {
+  if (Object.keys(relevantTools).length === 0) {
     if (process.env.NODE_ENV === "development") {
       console.log("No tools are needed for this query.");
     }
     return undefined;
   }
-  const relevantTools = await getRelevantToolsLLM(prompt || "", tools);
+
   if (process.env.NODE_ENV === "development") {
-    console.log("Relevant tools:", relevantTools);
+    const toolInfo = Object.entries(relevantTools).map(([name, tool]) => ({
+      name,
+      description: tool.description,
+    }));
+    console.log("Relevant tools:", JSON.stringify(toolInfo, null, 2));
   }
   return relevantTools;
 };
@@ -165,32 +53,7 @@ export const vercelStreamAgentQuery = async ({
 }: {
   messages: UIMessage[];
   selectedModel?: LLMType;
-  tools: VercelToolManager.ToolType[];
-}) => {
-  "use server";
-  const currentUserMessage = getLastMessageText(messages);
-
-  const llmTools = await getTools(currentUserMessage || "", tools);
-
-  const result = streamText({
-    model: createModel(selectedModel as LLMType),
-    system: "You are a helpful assistant.",
-    messages: convertToModelMessages(messages),
-    tools: llmTools,
-    stopWhen: stepCountIs(5),
-  });
-
-  return result;
-};
-
-export const vercelStreamAgentQueryLLM = async ({
-  messages,
-  selectedModel,
-  tools,
-}: {
-  messages: UIMessage[];
-  selectedModel?: LLMType;
-  tools: VercelToolManager.ToolType[];
+  tools: ToolType[];
 }) => {
   "use server";
   const currentUserMessage = getLastMessageText(messages);
