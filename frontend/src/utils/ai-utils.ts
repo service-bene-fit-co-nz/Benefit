@@ -4,7 +4,7 @@ import { groq } from "@ai-sdk/groq";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
-import { LLMType } from "./ai/types";
+import { LLMType } from "./ai/ai-types";
 import { LanguageModelV2 } from "@ai-sdk/provider";
 
 export const getLLM = (

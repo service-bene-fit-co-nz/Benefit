@@ -2,6 +2,7 @@ import { z } from "zod";
 import { tool } from "ai";
 import { findClientByName } from "@/server-actions/client/actions";
 import { downloadMessengerHistory } from "@/server-actions/facebook/actions";
+import { ToolMetadata } from "@/utils/ai/ai-types";
 
 // --- New Input Schema ---
 const ClientNameInputSchema = z.object({
@@ -9,7 +10,7 @@ const ClientNameInputSchema = z.object({
   lastName: z.string().optional().describe("The last name of the client."),
 });
 
-export const getCurrentClientDetailsTool = tool({
+const getCurrentClientDetailsTool = tool({
   description: `Gets all client details and records from multiple tables in the database for a client based on the currently logged in user.
     `,
   inputSchema: ClientNameInputSchema,
@@ -50,7 +51,7 @@ const FacebookIdInputSchema = z.object({
   faceBookId: z.string().optional().describe("The Facebook ID of the client."),
 });
 
-export const getCurrentClientFacebookMessagesTool = tool({
+const getCurrentClientFacebookMessagesTool = tool({
   description: `Gets all facebook messages for a client based on a facebook id.
     `,
   inputSchema: FacebookIdInputSchema,
@@ -87,3 +88,18 @@ export const getCurrentClientFacebookMessagesTool = tool({
     }
   },
 });
+
+export const currentClientTools: ToolMetadata[] = [
+  {
+    toolType: "currentClient.details.get",
+    functionName: "getCurrentClientDetails",
+    description: getCurrentClientDetailsTool.description,
+    tool: getCurrentClientDetailsTool,
+  },
+  {
+    toolType: "currentClient.facebook.messages.get",
+    functionName: "getCurrentClientFacebookMessages",
+    description: getCurrentClientFacebookMessagesTool.description,
+    tool: getCurrentClientFacebookMessagesTool,
+  },
+];

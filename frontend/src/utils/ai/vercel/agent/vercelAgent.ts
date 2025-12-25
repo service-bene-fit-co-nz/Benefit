@@ -1,5 +1,5 @@
 "use server";
-import { LLMType, ToolType } from "./../../types";
+import { LLMType, ToolIdentifier } from "./../../ai-types";
 import { HumanMessage } from "@langchain/core/messages";
 import { getLLM, createModel } from "@/utils/ai-utils";
 import {
@@ -25,7 +25,7 @@ const getLastMessageText = (messages: UIMessage[]): string | undefined => {
 
 const getTools = async (
   prompt: string,
-  tools: ToolType[]
+  tools: ToolIdentifier[]
 ): Promise<{ [key: string]: Tool } | undefined> => {
   const relevantTools = await getRelevantToolsLLM(prompt || "", tools);
 
@@ -53,7 +53,7 @@ export const vercelStreamAgentQuery = async ({
 }: {
   messages: UIMessage[];
   selectedModel?: LLMType;
-  tools: ToolType[];
+  tools: ToolIdentifier[];
 }) => {
   "use server";
   const currentUserMessage = getLastMessageText(messages);

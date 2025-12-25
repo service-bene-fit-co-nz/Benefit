@@ -31,10 +31,10 @@ import { Combobox } from "@/components/ui/combobox";
 import { PaperclipIcon, RotateCcwIcon } from "lucide-react";
 
 import { useChat, type UIMessage } from "@ai-sdk/react";
-import { type ToolType } from "@/utils/ai/types";
+import { type ToolIdentifier } from "@/utils/ai/ai-types";
 import { useAuth } from "@/hooks/use-auth";
 import { type FormEventHandler, useCallback, useEffect, useState } from "react";
-import { LLMType } from "@/utils/ai/types";
+import { LLMType } from "@/utils/ai/ai-types";
 import { DefaultChatTransport } from "ai";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -109,7 +109,7 @@ export function AIChatConversation({
   hasTrainerPrompt,
   authId,
 }: {
-  llmTools: ToolType[];
+  llmTools: ToolIdentifier[];
   hasTrainerPrompt: boolean;
   authId?: string;
 }) {

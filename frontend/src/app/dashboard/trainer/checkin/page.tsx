@@ -6,7 +6,7 @@ import { SummaryFilterPanel } from "@/components/dashboard/trainer/summary/Summa
 import { ClientManagementPanel } from "@/components/dashboard/trainer/summary/ClientManagementPanel";
 import { ClientForTrainer } from "@/server-actions/trainer/clients/actions";
 import { AIChatConversation } from "@/components/ai/AIChatConversation";
-import { ToolType } from "@/utils/ai/types";
+import { ToolIdentifier } from "@/utils/ai/ai-types";
 
 export default function CheckIn() {
   const [selectedClient, setSelectedClient] = useState<
@@ -21,7 +21,7 @@ export default function CheckIn() {
     setSelectedClient(undefined);
   };
 
-  const llmTools: ToolType[] = [
+  const llmTools: ToolIdentifier[] = [
     "allClients.details.get",
     "allClients.notes.get",
     "utility.currentDateTime.get",

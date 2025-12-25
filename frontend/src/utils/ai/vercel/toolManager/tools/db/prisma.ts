@@ -3,6 +3,7 @@ import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import * as fs from "fs";
 import * as path from "path";
+import { ToolMetadata } from "@/utils/ai/ai-types";
 
 const prisma = new PrismaClient();
 
@@ -53,7 +54,7 @@ export function getPrismaSchemaContext(): string {
   }
 }
 
-export const sqlQueryTool = tool({
+const sqlQueryTool = tool({
   // The description the LLM reads to decide whether to call the tool
   description: `Executes a read-only SQL SELECT query against the Postgres database. 
     Use this ONLY to retrieve data for the user. Never use INSERT, UPDATE, DELETE, or DROP.
@@ -88,3 +89,12 @@ export const sqlQueryTool = tool({
     return executePrismaSql(sqlQuery);
   },
 });
+
+export const dbTools: ToolMetadata[] = [
+  {
+    toolType: "db.sqlQuery.get",
+    functionName: "sqlQuery",
+    description: sqlQueryTool.description,
+    tool: sqlQueryTool,
+  },
+];

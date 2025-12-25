@@ -1,6 +1,6 @@
 import { vercelStreamAgentQuery } from "@/utils/ai/vercel/agent/vercelAgent";
 import { type UIMessage } from "ai";
-import { LLMType, ToolType } from "@/utils/ai/types";
+import { LLMType, ToolIdentifier } from "@/utils/ai/ai-types";
 
 export async function POST(req: Request) {
   const {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   }: {
     messages: UIMessage[];
     selectedModel?: LLMType;
-    tools: ToolType[];
+    tools: ToolIdentifier[];
   } = await req.json();
 
   console.log("API Received Post...");

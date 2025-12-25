@@ -1,13 +1,13 @@
 import React from "react";
 import { AIChatConversation } from "@/components/ai/AIChatConversation";
-import { ToolType } from "@/utils/ai/types";
+import { ToolIdentifier } from "@/utils/ai/ai-types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 const TrainerAIPage = async () => {
   const session = await getServerSession(authOptions);
   const authId = session?.user?.id;
-  const llmTools: ToolType[] = [
+  const llmTools: ToolIdentifier[] = [
     "allClients.details.get",
     "allClients.notes.get",
     "allClients.notes.save",

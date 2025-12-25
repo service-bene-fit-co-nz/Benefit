@@ -11,6 +11,7 @@ import { ClientNoteType } from "@prisma/client";
 import { findClientByName } from "@/server-actions/client/actions";
 import { readAllClients } from "@/server-actions/admin/clients/actions";
 import { fetchRawFitbitDatabyDate } from "@/server-actions/fitbit/actions";
+import { ToolMetadata } from "@/utils/ai/ai-types";
 
 // --- Input Schema Definition ---
 // Define a single Zod schema that can be reused for both tools
@@ -21,7 +22,7 @@ const ClientIdInputSchema = z.object({
 // ------------------------------------
 // 1. getClientDetails Tool (Fixed)
 // ------------------------------------
-export const getClientDetailsTool = tool({
+const getClientDetailsTool = tool({
   // Improved description focuses on the function, not the required format
   description:
     "Fetches comprehensive details (name, status, email, etc.) of a client using their unique client ID.",
@@ -58,7 +59,7 @@ export const getClientDetailsTool = tool({
 // ------------------------------------
 // 2. getClientNotes Tool (Fixed)
 // ------------------------------------
-export const getClientNotesTool = tool({
+const getClientNotesTool = tool({
   description:
     "Fetches all historical notes and progress entries associated with a client using their unique client ID.",
 
@@ -102,7 +103,7 @@ const ClientNameInputSchema = z.object({
 // ------------------------------------
 // 3. getClientIdByName Tool
 // ------------------------------------
-export const getClientIdByNameTool = tool({
+const getClientIdByNameTool = tool({
   description: "Finds a client's ID by their first name, last name, or both.",
   inputSchema: ClientNameInputSchema,
   execute: async ({
@@ -141,7 +142,7 @@ export const getClientIdByNameTool = tool({
 // ------------------------------------
 // 4. getAllClients Tool
 // ------------------------------------
-export const getAllClientsTool = tool({
+const getAllClientsTool = tool({
   description: "Gets all clients with their IDs, first names, and last names.",
   inputSchema: ClientNameInputSchema,
   execute: async ({
@@ -187,7 +188,7 @@ const FitbitDataInputSchema = z.object({
 // ------------------------------------
 // 5. getRawFitbitData Tool
 // ------------------------------------
-export const getRawFitbitDataTool = tool({
+const getRawFitbitDataTool = tool({
   description:
     "Fetches raw Fitbit data for a client within a specified date range.",
   inputSchema: FitbitDataInputSchema,
@@ -248,9 +249,9 @@ const SaveClientNoteInputSchema = z.object({
 // ------------------------------------
 // 6. saveClientNote Tool
 // ------------------------------------
-export const saveClientNoteTool = tool({
-  description: `Saves a new note for a client. The LLM should always confirm the data for noteMetadata and formData with the user before proceeding. Only trainer notes can be stored using 
-    this function. 
+const saveClientNoteTool = tool({
+  description: `Saves a new note for a client. The LLM should always confirm the data for noteMetadata and formData with the user before proceeding. Only trainer notes can be stored using
+    this function.
     noteMetaData field should include a title field and and author as part of the json
     formData field should include the note test in a json parameter called content
     Before committing the data to to the database always display the data that wil be stored in the db and ask if it is correct before saving
@@ -287,67 +288,42 @@ export const saveClientNoteTool = tool({
   },
 });
 
-// ------------------------------------
-// 6. deleteClientNote Tool
-// ------------------------------------
-export const deleteClientNoteTool = tool({
-  description: `
-    `,
-  inputSchema: SaveClientNoteInputSchema,
-  execute: async ({
-    clientId,
-    noteType,
-    noteMetadata,
-    formData,
-  }: z.infer<typeof SaveClientNoteInputSchema>) => {
-    try {
-      const newNote = await createClientNote(
-        clientId,
-        noteType,
-        noteMetadata,
-        formData
-      );
 
-      return {
-        status: "success",
-        message: "Client note saved successfully.",
-        noteId: newNote.id,
-      };
-    } catch (error: unknown) {
-      console.error("Error saving client note:", error);
-      return {
-        error:
-          error instanceof Error
-            ? error.message
-            : "An unknown error occurred while saving the client note.",
-      };
-    }
+export const clientTools: ToolMetadata[] = [
+  {
+    toolType: "allClients.details.get",
+    functionName: "getClientDetails",
+    description: getClientDetailsTool.description,
+    tool: getClientDetailsTool,
   },
-});
-
-// ------------------------------------
-// 6. getCurrentDateAndTime Tool
-// ------------------------------------
-export const getCurrentDateAndTimeTool = tool({
-  description: `
-    Returns the current date and time in ISO 8601 format.
-    `,
-  inputSchema: z.object({}),
-  execute: async () => {
-    try {
-      const currentDateAndTime = new Date().toISOString();
-      return {
-        status: "success",
-        dateAndTime: currentDateAndTime,
-      };
-    } catch (error: unknown) {
-      console.error("Error getting current date and time:", error);
-      return {
-        error:
-          error instanceof Error
-            ? error.message
-            : "An unknown error occurred while getting the current date and time.",
-      };
-    }
+  {
+    toolType: "allClients.notes.get",
+    functionName: "getClientNotes",
+    description: getClientNotesTool.description,
+    tool: getClientNotesTool,
   },
-});
+  {
+    toolType: "allClients.idByName.get",
+    functionName: "getClientIdByName",
+    description: getClientIdByNameTool.description,
+    tool: getClientIdByNameTool,
+  },
+  {
+    toolType: "allClients.allClients.get",
+    functionName: "getAllClients",
+    description: getAllClientsTool.description,
+    tool: getAllClientsTool,
+  },
+  {
+    toolType: "allClients.rawFitbitData.get",
+    functionName: "getRawFitbitData",
+    description: getRawFitbitDataTool.description,
+    tool: getRawFitbitDataTool,
+  },
+  {
+    toolType: "allClients.notes.save",
+    functionName: "saveClientNote",
+    description: saveClientNoteTool.description,
+    tool: saveClientNoteTool,
+  },
+];

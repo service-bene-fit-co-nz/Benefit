@@ -1,109 +1,23 @@
 import { Tool } from "ai";
-import { ToolType, toolNameMap } from "../../types";
-import {
-  getClientDetailsTool,
-  getClientNotesTool,
-  getCurrentDateAndTimeTool,
-  getRawFitbitDataTool,
-  getAllClientsTool,
-  getClientIdByNameTool,
-  saveClientNoteTool,
-} from "./tools/client/client";
-import {
-  getCurrentClientDetailsTool,
-  getCurrentClientFacebookMessagesTool,
-}
-from "./tools/currentClient/currentClient";
-import { sqlQueryTool } from "./tools/db/prisma";
+import { ToolIdentifier } from "../../ai-types";
+import { allVercelAITools, getToolMetadata } from "./toolIndex";
 
-// Define a recursive type for the nested tool map
-type NestedToolMap = {
-  [key: string]: unknown;
-};
-
-// The toolFunctionMap needs to be a nested object
-const toolFunctionMap: NestedToolMap = {
-  currentClient: {
-    details: {
-      get: getCurrentClientDetailsTool,
-    },
-    facebook: {
-      messages: {
-        get: getCurrentClientFacebookMessagesTool,
-      },
-    },
-  },
-  allClients: {
-    details: {
-      get: getClientDetailsTool,
-    },
-    notes: {
-      get: getClientNotesTool,
-      save: saveClientNoteTool,
-    },
-    rawFitbitData: {
-      get: getRawFitbitDataTool,
-    },
-    allClients: {
-      get: getAllClientsTool,
-    },
-    idByName: {
-      get: getClientIdByNameTool,
-    },
-  },
-  db: {
-    sqlQuery: {
-      get: sqlQueryTool,
-    },
-  },
-  utility: {
-    currentDateTime: {
-      get: getCurrentDateAndTimeTool,
-    },
-  },
-};
-
-
-export const getTool = (type: ToolType): Tool => {
-  const parts = type.split(".");
-  let currentLevel: unknown = toolFunctionMap;
-
-  for (const part of parts) {
-    if (
-      typeof currentLevel === "object" &&
-      currentLevel !== null &&
-      part in currentLevel
-    ) {
-      currentLevel = (currentLevel as Record<string, unknown>)[part];
-    } else {
-      throw new Error(
-        `Tool of type "${type}" not found. Path segment "${part}" is missing.`
-      );
-    }
+export const getTool = (type: ToolIdentifier): Tool => {
+  const toolMetadata = getToolMetadata(type);
+  if (!toolMetadata) {
+    throw new Error(`Tool of type "${type}" not found.`);
   }
-
-  // A valid tool is an object with an 'execute' property.
-  if (
-    typeof currentLevel === "object" &&
-    currentLevel !== null &&
-    "execute" in currentLevel
-  ) {
-    return currentLevel as Tool;
-  } else {
-    console.error(
-      `*** Get Tool Failed: The path for "${type}" did not resolve to a valid tool object.`
-    );
-    throw new Error(`Resolved item for "${type}" is not a valid tool.`);
-  }
+  return toolMetadata.tool;
 };
 
-export const getTools = (types: ToolType[]): { [key: string]: Tool } => {
+export const getTools = (types: ToolIdentifier[]): { [key: string]: Tool } => {
   const tools: { [key: string]: Tool } = {};
   for (const type of types) {
-    const tool = getTool(type);
-    const toolName = toolNameMap[type];
-    if (tool && toolName) {
-      tools[toolName] = tool;
+    const toolMetadata = allVercelAITools[type];
+    if (toolMetadata && toolMetadata.tool && toolMetadata.functionName) {
+      tools[toolMetadata.functionName] = toolMetadata.tool;
+    } else {
+      console.warn(`Tool "${type}" or its metadata is incomplete/not found.`);
     }
   }
   return tools;
