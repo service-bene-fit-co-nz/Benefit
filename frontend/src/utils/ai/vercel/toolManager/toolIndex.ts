@@ -11,15 +11,13 @@ const allTools: ToolMetadata[] = [
   ...utilityTools,
 ];
 
-export const toolMetadata: Record<
-  ToolIdentifier,
-  { description?: string }
-> = allTools.reduce((acc, currentTool) => {
-  acc[currentTool.toolType] = {
-    description: currentTool.description,
-  };
-  return acc;
-}, {} as Record<ToolIdentifier, { description?: string }>);
+export const toolMetadata: Record<ToolIdentifier, { description?: string }> =
+  allTools.reduce((acc, currentTool) => {
+    acc[currentTool.toolType] = {
+      description: currentTool.description,
+    };
+    return acc;
+  }, {} as Record<ToolIdentifier, { description?: string }>);
 
 export const allVercelAITools = allTools.reduce((acc, currentTool) => {
   acc[currentTool.toolType] = currentTool;

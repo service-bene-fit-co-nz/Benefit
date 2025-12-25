@@ -5,6 +5,7 @@ export type LLMType =
   | "Groq";
 
 export type ToolIdentifier =
+  | "clients.details.get"
   | "currentClient.details.get"
   | "currentClient.facebook.messages.get"
   | "allClients.details.get"

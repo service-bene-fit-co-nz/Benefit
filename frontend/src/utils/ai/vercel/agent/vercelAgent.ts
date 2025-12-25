@@ -56,10 +56,13 @@ export const vercelStreamAgentQuery = async ({
   tools: ToolIdentifier[];
 }) => {
   "use server";
+
+  console.log("*** vercelStreamAgentQuery (1)");
   const currentUserMessage = getLastMessageText(messages);
 
   const llmTools = await getTools(currentUserMessage || "", tools);
 
+  console.log("*** vercelStreamAgentQuery (2)");
   const result = streamText({
     model: createModel(selectedModel as LLMType),
     system: "You are a helpful assistant.",
@@ -68,5 +71,6 @@ export const vercelStreamAgentQuery = async ({
     stopWhen: stepCountIs(5),
   });
 
+  console.log("*** vercelStreamAgentQuery (3)");
   return result;
 };
