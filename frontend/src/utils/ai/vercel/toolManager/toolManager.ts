@@ -14,8 +14,8 @@ export const getTools = (types: ToolIdentifier[]): { [key: string]: Tool } => {
   const tools: { [key: string]: Tool } = {};
   for (const type of types) {
     const toolMetadata = allVercelAITools[type];
-    if (toolMetadata && toolMetadata.tool && toolMetadata.functionName) {
-      tools[toolMetadata.functionName] = toolMetadata.tool;
+    if (toolMetadata && toolMetadata.tool) {
+      tools[toolMetadata.toolType] = toolMetadata.tool;
     } else {
       console.warn(`Tool "${type}" or its metadata is incomplete/not found.`);
     }

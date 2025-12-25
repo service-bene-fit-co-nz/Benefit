@@ -92,13 +92,11 @@ const getCurrentClientFacebookMessagesTool = tool({
 export const currentClientTools: ToolMetadata[] = [
   {
     toolType: "currentClient.details.get",
-    functionName: "getCurrentClientDetails",
     description: getCurrentClientDetailsTool.description,
     tool: getCurrentClientDetailsTool,
   },
   {
     toolType: "currentClient.facebook.messages.get",
-    functionName: "getCurrentClientFacebookMessages",
     description: getCurrentClientFacebookMessagesTool.description,
     tool: getCurrentClientFacebookMessagesTool,
   },

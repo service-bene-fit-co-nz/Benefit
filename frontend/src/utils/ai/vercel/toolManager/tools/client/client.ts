@@ -292,37 +292,31 @@ const saveClientNoteTool = tool({
 export const clientTools: ToolMetadata[] = [
   {
     toolType: "allClients.details.get",
-    functionName: "getClientDetails",
     description: getClientDetailsTool.description,
     tool: getClientDetailsTool,
   },
   {
     toolType: "allClients.notes.get",
-    functionName: "getClientNotes",
     description: getClientNotesTool.description,
     tool: getClientNotesTool,
   },
   {
     toolType: "allClients.idByName.get",
-    functionName: "getClientIdByName",
     description: getClientIdByNameTool.description,
     tool: getClientIdByNameTool,
   },
   {
     toolType: "allClients.allClients.get",
-    functionName: "getAllClients",
     description: getAllClientsTool.description,
     tool: getAllClientsTool,
   },
   {
     toolType: "allClients.rawFitbitData.get",
-    functionName: "getRawFitbitData",
     description: getRawFitbitDataTool.description,
     tool: getRawFitbitDataTool,
   },
   {
     toolType: "allClients.notes.save",
-    functionName: "saveClientNote",
     description: saveClientNoteTool.description,
     tool: saveClientNoteTool,
   },

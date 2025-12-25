@@ -93,7 +93,6 @@ const sqlQueryTool = tool({
 export const dbTools: ToolMetadata[] = [
   {
     toolType: "db.sqlQuery.get",
-    functionName: "sqlQuery",
     description: sqlQueryTool.description,
     tool: sqlQueryTool,
   },

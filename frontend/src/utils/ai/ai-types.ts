@@ -21,7 +21,6 @@ import { toolMetadata } from "./vercel/toolManager/toolIndex";
 
 export type ToolMetadata = {
   toolType: ToolIdentifier;
-  functionName: string;
   description?: string;
   tool: Tool;
 };

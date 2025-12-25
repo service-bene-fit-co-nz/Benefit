@@ -29,7 +29,6 @@ const getCurrentDateAndTimeTool = tool({
 export const utilityTools: ToolMetadata[] = [
   {
     toolType: "utility.currentDateTime.get",
-    functionName: "getCurrentDateAndTime",
     description: getCurrentDateAndTimeTool.description,
     tool: getCurrentDateAndTimeTool,
   },
