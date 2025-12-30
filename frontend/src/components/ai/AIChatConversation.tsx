@@ -47,11 +47,52 @@ import {
 } from "@/server-actions/client/actions";
 import { getPrismaSchemaContext } from "@/server-actions/ai/actions";
 
-const models: { id: LLMType; name: string }[] = [
-  { id: "Gemini-2.5-flash-lite", name: "Gemini-2.5-flash-lite" },
-  { id: "Gemini-2.5-flash", name: "Gemini-2.5-flash" },
-  { id: "ChatGPT", name: "ChatGPT" },
-  { id: "Groq", name: "Groq" },
+const models: {
+  name: string;
+  llmModel: LLMType;
+  preProcessorModel: LLMType;
+}[] = [
+  {
+    name: "Gemma-3-Lite/Gemma-3-Lite",
+    llmModel: "Gemma-3-Lite",
+    preProcessorModel: "Gemma-3-Lite",
+  },
+  {
+    name: "Gemma-3-Lite/Gemma-3-Fast",
+    llmModel: "Gemma-3-Fast",
+    preProcessorModel: "Gemma-3-Lite",
+  },
+  {
+    llmModel: "Gemma-3-Balanced",
+    name: "Gemma-3-Lite/Gemma-3-Balanced",
+    preProcessorModel: "Gemma-3-Lite",
+  },
+  {
+    llmModel: "Gemma-3-Power",
+    name: "Gemma-3-Lite/Gemma-3-Power",
+    preProcessorModel: "Gemma-3-Lite",
+  },
+  {
+    llmModel: "Gemini-2.5-flash-lite",
+    name: "Gemini-2.5-flash-lite/Gemini-2.5-flash-lite",
+    preProcessorModel: "Gemini-2.5-flash-lite",
+  },
+  {
+    llmModel: "Gemini-2.5-flash",
+    name: "Gemini-2.5-flash-lite/Gemini-2.5-flash",
+    preProcessorModel: "Gemini-2.5-flash-lite",
+  },
+  {
+    llmModel: "ChatGPT",
+    name: "ChatGPT/ChatGPT",
+    preProcessorModel: "ChatGPT",
+  },
+  { llmModel: "Groq", name: "Groq/Groq", preProcessorModel: "Groq-versatile" },
+  {
+    llmModel: "Groq-versatile",
+    name: "Groq-versatile/Groq-versatile",
+    preProcessorModel: "Groq-versatile",
+  },
 ];
 
 function FacebookMessageHistory({ data }: { data: any }) {
@@ -104,6 +145,11 @@ function FacebookMessageHistory({ data }: { data: any }) {
   );
 }
 
+type LLMModels = {
+  preProcessorModel: LLMType;
+  llmModel: LLMType;
+};
+
 export function AIChatConversation({
   llmTools,
   hasTrainerPrompt,
@@ -115,7 +161,10 @@ export function AIChatConversation({
 }) {
   const { user } = useAuth();
   const [inputValue, setInputValue] = useState("");
-  const [selectedModel, setSelectedModel] = useState<LLMType>(models[0].id);
+  const [selectedModel, setSelectedModel] = useState<LLMModels>({
+    llmModel: models[0].llmModel,
+    preProcessorModel: models[0].preProcessorModel,
+  });
   const [selectedPrompt, setSelectedPrompt] = useState<string | undefined>();
 
   const { data: prompts, isLoading: promptsLoading } = useQuery<PromptData[]>({
@@ -151,6 +200,24 @@ export function AIChatConversation({
     transport: new DefaultChatTransport({
       api: "/api/ai",
     }),
+    onError: (err) => {
+      let errorMessageText = `Error: ${err.message}`;
+      try {
+        const parsedError = JSON.parse(err.message);
+        if (parsedError && parsedError.error) {
+          errorMessageText = `Error: ${parsedError.error}`;
+        }
+      } catch (e) {
+        // Not a JSON string, so we'll use the original message
+      }
+
+      const errorMessage: UIMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
+        parts: [{ type: "text", text: errorMessageText }],
+      };
+      setMessages((currentMessages) => [...currentMessages, errorMessage]);
+    },
   });
 
   useEffect(() => {
@@ -218,7 +285,13 @@ export function AIChatConversation({
   const isThinking = status === "submitted" || status === "streaming";
 
   const handleModelChange = (modelId: LLMType) => {
-    setSelectedModel(modelId);
+    const model = models.find((m) => m.llmModel === modelId);
+    if (model) {
+      setSelectedModel({
+        llmModel: model.llmModel,
+        preProcessorModel: model.preProcessorModel,
+      });
+    }
   };
 
   const handlePromptChange = (promptId: string) => {
@@ -233,7 +306,8 @@ export function AIChatConversation({
     isLoading || promptsLoading || dbContextLoading || clientDataLoading;
 
   const body: any = {
-    selectedModel: selectedModel,
+    selectedModel: selectedModel.llmModel,
+    preProcessorModel: selectedModel.preProcessorModel,
     tools: llmTools,
   };
 
@@ -268,7 +342,7 @@ export function AIChatConversation({
           </div>
           <div className="h-4 w-px bg-border" />
           <span className="text-muted-foreground text-xs">
-            {models.find((m) => m.id === selectedModel)?.name}
+            {models.find((m) => m.llmModel === selectedModel.llmModel)?.name}
           </span>
         </div>
         <Button
@@ -407,7 +481,7 @@ export function AIChatConversation({
               )}
 
               <PromptInputModelSelect
-                value={selectedModel}
+                value={selectedModel.llmModel}
                 onValueChange={handleModelChange}
                 disabled={isAnythingLoading}
               >
@@ -416,7 +490,10 @@ export function AIChatConversation({
                 </PromptInputModelSelectTrigger>
                 <PromptInputModelSelectContent>
                   {models.map((model) => (
-                    <PromptInputModelSelectItem key={model.id} value={model.id}>
+                    <PromptInputModelSelectItem
+                      key={model.llmModel}
+                      value={model.llmModel}
+                    >
                       {model.name}
                     </PromptInputModelSelectItem>
                   ))}

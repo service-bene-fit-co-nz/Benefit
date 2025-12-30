@@ -1,18 +1,18 @@
 // src/utils/ai/vercel/agent/toolRouterLLM.ts
 import { getTools } from "./toolManager";
-import { ToolIdentifier } from "../../ai-types";
+import { LLMType, ToolIdentifier } from "../../ai-types";
 import { toolMetadata } from "./toolIndex"; // Import toolMetadata from toolIndex.ts
 import { getLLM } from "@/utils/ai-utils";
 import { HumanMessage } from "@langchain/core/messages";
 import { Tool } from "ai";
 
 export const getRelevantToolsLLM = async (
+  preProcessorModel: LLMType,
   message: string,
   availableToolTypes: ToolIdentifier[]
 ): Promise<{ [key: string]: Tool }> => {
   if (!message) return {};
-
-  const llm = getLLM("Gemini-2.5-flash"); // Using a fast model for this routing task
+  const llm = getLLM(preProcessorModel);
 
   const toolsWithDescriptions = availableToolTypes
     .map((toolType) => {
@@ -27,14 +27,8 @@ export const getRelevantToolsLLM = async (
 
   const prompt = `
     Given the user's message, identify the most relevant tools to use from the following list.
-
-    User Message: "${message}"
-
-    Available Tools:
-    {
-    ${toolsWithDescriptions}
-    }
-
+    User Message: "${message}" 
+    Available Tools:{${toolsWithDescriptions}}
     Return a JSON array of strings, where each string is the name of a relevant tool. For example: ["tool1.name.get", "tool2.name.get"].
     If no tools are relevant, return an empty array.
     `;

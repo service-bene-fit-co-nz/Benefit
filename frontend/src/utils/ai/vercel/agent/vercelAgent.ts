@@ -24,10 +24,15 @@ const getLastMessageText = (messages: UIMessage[]): string | undefined => {
 };
 
 const getTools = async (
+  preProcessorModel: LLMType,
   prompt: string,
   tools: ToolIdentifier[]
 ): Promise<{ [key: string]: Tool } | undefined> => {
-  const relevantTools = await getRelevantToolsLLM(prompt || "", tools);
+  const relevantTools = await getRelevantToolsLLM(
+    preProcessorModel,
+    prompt || "",
+    tools
+  );
 
   if (Object.keys(relevantTools).length === 0) {
     if (process.env.NODE_ENV === "development") {
@@ -48,29 +53,57 @@ const getTools = async (
 
 export const vercelStreamAgentQuery = async ({
   messages,
+  preProcessorModel,
   selectedModel,
   tools,
 }: {
   messages: UIMessage[];
-  selectedModel?: LLMType;
+  preProcessorModel: LLMType;
+  selectedModel: LLMType;
   tools: ToolIdentifier[];
 }) => {
   "use server";
 
-  console.log("*** vercelStreamAgentQuery (1)");
-  const currentUserMessage = getLastMessageText(messages);
-
-  const llmTools = await getTools(currentUserMessage || "", tools);
-
-  console.log("*** vercelStreamAgentQuery (2)");
-  const result = streamText({
-    model: createModel(selectedModel as LLMType),
-    system: "You are a helpful assistant.",
-    messages: convertToModelMessages(messages),
-    tools: llmTools,
-    stopWhen: stepCountIs(5),
-  });
-
-  console.log("*** vercelStreamAgentQuery (3)");
-  return result;
+  try {
+    const currentUserMessage = getLastMessageText(messages);
+    const llmTools = await getTools(
+      preProcessorModel,
+      currentUserMessage || "",
+      tools
+    );
+    const result = streamText({
+      model: createModel(selectedModel as LLMType),
+      system: "You are a helpful assistant.",
+      messages: convertToModelMessages(messages),
+      tools: llmTools,
+      stopWhen: stepCountIs(5),
+      onAbort: () => {
+        console.log("Agent query was aborted by the user.");
+      },
+      onError: (error: unknown) => {
+        console.error("Error during agent query streaming:", error);
+      },
+      onFinish: () => {
+        console.log("Agent query streaming finished.");
+      },
+      onStepFinish: (step) => {
+        console.log("Finished step:", step);
+      },
+      onChunk: (chunk) => {
+        console.log("Received chunk:", chunk);
+      },
+    });
+    return result;
+  } catch (error) {
+    const errorMessageText = `An unexpected error occurred during the agent query: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
+    const errorMessage: UIMessage = {
+      id: Date.now().toString(),
+      role: "assistant",
+      parts: [{ type: "text", text: errorMessageText }],
+    };
+    messages.push(errorMessage);
+    throw error; // Re-throw the error for the calling function to handle
+  }
 };

@@ -1,8 +1,13 @@
 export type LLMType =
+  | "Gemma-3-Lite"
+  | "Gemma-3-Fast"
+  | "Gemma-3-Balanced"
+  | "Gemma-3-Power"
   | "Gemini-2.5-flash"
   | "Gemini-2.5-flash-lite"
   | "ChatGPT"
-  | "Groq";
+  | "Groq"
+  | "Groq-versatile";
 
 export type ToolIdentifier =
   | "clients.details.get"

@@ -11,6 +11,18 @@ export const getLLM = (
   type: LLMType
 ): ChatGoogleGenerativeAI | ChatOpenAI | ChatGroq => {
   switch (type) {
+    case "Gemma-3-Lite": {
+      const apiKey: string = process.env.GOOGLE_API_KEY || "";
+      if (!apiKey) {
+        throw new Error("GOOGLE_API_KEY environment variable is not set.");
+      }
+      return new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
+        model: "gemma-3-1b-it",
+        temperature: 0.7,
+        maxRetries: 0,
+      });
+    }
     case "Gemini-2.5-flash": {
       const apiKey: string = process.env.GOOGLE_API_KEY || "";
       if (!apiKey) {
@@ -59,12 +71,36 @@ export const getLLM = (
         maxRetries: 0,
       });
     }
+    case "Groq-versatile": {
+      const apiKey: string = process.env.GROQ_API_KEY || "";
+      if (!apiKey) {
+        throw new Error("GROQ_API_KEY environment variable is not set.");
+      }
+      return new ChatGroq({
+        apiKey: apiKey,
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.7,
+        maxRetries: 0,
+      });
+    }
   }
   throw new Error("Invalid LLM type.");
 };
 
 export const createModel = (type: LLMType): LanguageModelV2 => {
   switch (type) {
+    case "Gemma-3-Lite":
+      console.log("Using Gemma-3 lite model");
+      return google("gemma-3-1b-it");
+    case "Gemma-3-Fast":
+      console.log("Using Gemma-3 fast model");
+      return google("gemma-3-4b-it");
+    case "Gemma-3-Balanced":
+      console.log("Using Gemma-3 balanced model");
+      return google("gemma-3-12b-it");
+    case "Gemma-3-Power":
+      console.log("Using Gemma-3 power model");
+      return google("gemma-3-27b-it");
     case "Gemini-2.5-flash":
       console.log("Using Gemini model");
       return google("gemini-2.5-flash");
@@ -77,6 +113,9 @@ export const createModel = (type: LLMType): LanguageModelV2 => {
     case "Groq":
       console.log("Using Groq model");
       return groq("llama-3.1-8b-instant");
+    case "Groq-versatile":
+      console.log("Using Groq versatile model");
+      return groq("llama-3.3-70b-versatile");
     default:
       console.log("No model selected, defaulting to Gemini");
       return google("gemini-2.5-flash");
